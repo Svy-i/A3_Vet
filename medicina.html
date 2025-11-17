@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap - Módulo Medicina Veterinária</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/roadmap.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="roadmap-header">
+        <div class="header-content">
+            <div>
+                <h1>Módulo Medicina Veterinária</h1>
+                <div class="gradient-underline"></div>
+            </div>
+            <button id="homeBtn" class="home-btn" aria-label="Início">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Início</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Introduction -->
+            <div class="intro-section">
+                <p class="intro-text">
+                    Este roadmap apresenta o caminho de aprendizado para o módulo de Medicina Veterinária. 
+                    Clique em cada tópico para ver detalhes, conteúdo programático e recursos disponíveis.
+                </p>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-circle status-not-started"></div>
+                        <span>Não iniciado</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-circle status-in-progress"></div>
+                        <span>Em progresso</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-circle status-completed"></div>
+                        <span>Concluído</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roadmap Container -->
+            <div id="roadmapContainer" class="roadmap-container"></div>
+
+            <!-- Info Message -->
+            <div class="info-message">
+                <p>
+                    💡 <strong>Dica:</strong> Siga a sequência sugerida para uma melhor compreensão dos conteúdos. 
+                    Cada módulo foi desenvolvido para construir conhecimento de forma progressiva.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Topic Detail Sidebar -->
+    <div id="overlay" class="overlay"></div>
+    <aside id="topicDetail" class="topic-detail">
+        <div class="detail-header">
+            <div class="detail-header-content">
+                <h2 id="detailTitle"></h2>
+                <span id="detailStatus" class="status-badge"></span>
+            </div>
+            <button id="closeDetail" class="close-btn" aria-label="Fechar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="detail-content">
+            <div id="detailDescription" class="detail-section"></div>
+            <div id="detailSubtopics" class="detail-section"></div>
+            <div id="detailResources" class="detail-section"></div>
+            <div id="detailActions" class="detail-actions">
+                <button class="btn btn-primary">Iniciar Estudo</button>
+                <button class="btn btn-outline">Marcar como Concluído</button>
+            </div>
+            <div id="detailPlaceholder" class="placeholder-message" style="display: none;">
+                <p>Este tópico ainda está em desenvolvimento e será disponibilizado em breve.</p>
+            </div>
+        </div>
+    </aside>
+
+    <script src="/js/data.js"></script>
+    <script src="/js/roadmap.js"></script>
+</body>
+</html>

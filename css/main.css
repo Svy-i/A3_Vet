@@ -1,0 +1,148 @@
+body {
+    background-color: #f9f9f9;
+    color: #333;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+h1 {
+    text-align: center;
+}
+
+#buttons-container {
+    display: flex;
+    flex-wrap: wrap; 
+    width: 600px; 
+    margin: 20px auto; 
+    padding: 10px;
+    justify-content: flex-start; 
+}
+
+#buttons-container .module-button-style {
+    width: calc(33.333% - 20px); 
+    height: 50px;
+    margin: 10px;
+    box-sizing: border-box; 
+    text-align: center;
+}
+
+.module-button-style {
+    display: flex;
+    background: #fbca1f;
+    color: black;
+    font-family: inherit;
+    justify-content: center;
+    align-items: center;
+    padding: 0.6em 1.3em;
+    font-weight: 900;
+    font-size: 18px;
+    border: 3px solid black;
+    border-radius: 0.4em;
+    box-shadow: 0.1em 0.1em;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.module-button-style:hover {
+    transform: translate(-0.05em, -0.05em);
+    box-shadow: 0.15em 0.15em;
+}
+
+.module-button-style:active {
+    transform: translate(0.05em, 0.05em);
+    box-shadow: 0.05em 0.05em;
+}
+
+
+header nav {
+    display: flex;
+    align-items: center; 
+    width: 100%;
+    padding: 10px;
+}
+
+.right {
+    margin-right: 35px;
+}
+
+.right:first-of-type {
+    margin-left: auto;
+}
+
+a {
+    color: #007bff;
+    transition: color 0.5s;
+}
+
+body.dark-mode {
+    background-color: #121212; 
+    color: #f0f0f0;
+}
+
+body.dark-mode a {
+    color: #4a90e2; 
+}
+
+body.dark-mode .module-button-style {
+    color: black;
+}
+
+body.dark-mode header, body.dark-mode footer {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+}
+
+#dark-mode-toggle {
+    display: none;
+}
+
+.switch-label {
+    width: 60px;
+    height: 34px;
+    margin-left: 100px;
+    border: 2px solid #ccc;
+    position: relative;
+    display: block;
+    background: #ebebeb;
+    border-radius: 34px;
+    box-shadow: inset 0px 5px 15px rgba(0,0,0,0.4), inset 0px -5px 15px rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.switch-label::after {
+    content: "";
+    width: 26px;
+    height: 26px;
+    
+    position: absolute;
+    top: 4px; 
+    left: 4px;
+    
+    background-color: white; 
+    background-image: url(../images/sun-svgrepo-com.svg); 
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center; 
+
+    border-radius: 50%; 
+    box-shadow: 0px 5px 10px rgba(0,0,0,0.2);
+    transition: transform 0.3s, background-image 0.3s, background-color 0.3s;
+}   
+
+#dark-mode-toggle:checked + .switch-label { 
+    background: #242424;
+}
+
+#dark-mode-toggle:checked + .switch-label::after {
+    transform: translateX(26px);
+    background-color: #c5c5c5;
+    background-image: url(../images/moon-svgrepo-com.svg);
+}
+
+.switch-label:active::after {
+    width: 32px; 
+}
+
+input:checked + .switch-label + .background {
+    background: #242424;
+}
