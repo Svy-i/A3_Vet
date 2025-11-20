@@ -6,12 +6,12 @@ const roadmapData = {
             id: 'medicina-ruminantes',
             title: 'Medicina de Ruminantes',
             subtopics: [
-                'Semiologia e Exame Clínico',
-                'Afecções do Sistema Digestório',
-                'Doenças Sistêmicas e Metabólicas',
-                'Doenças Infecciosas e Parasitárias',
-                'Medicina de Neonatos e Jovem',
-                'Afecções da Glândula Mamária'
+                { title: 'Semiologia e Exame Clínico', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Afecções do Sistema Digestório', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Doenças Sistêmicas e Metabólicas', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Doenças Infecciosas e Parasitárias', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Medicina de Neonatos e Jovem', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Afecções da Glândula Mamária', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'}
             ],
             description: 'Estudo abrangente da medicina de ruminantes, incluindo diagnóstico e tratamento de afecções comuns.',
             resources: ['Apostila de Semiologia', 'Vídeos de Exame Clínico', 'Casos Clínicos Práticos'],
@@ -21,10 +21,10 @@ const roadmapData = {
             id: 'medicina-equideos',
             title: 'Medicina e Criação de Equídeos',
             subtopics: [
-                'Sistema Respiratório',
-                'Criação e Manejo',
-                'Nutrição Equina',
-                'Farmacologia e Terapêutica'
+                { title: 'Sistema Respiratório', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Criação e Manejo', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Nutrição Equina', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Farmacologia e Terapêutica', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'}
             ],
             description: 'Medicina especializada em equinos, abordando aspectos clínicos e de manejo.',
             resources: ['Manual de Medicina Equina', 'Protocolos Terapêuticos', 'Guia de Nutrição'],
@@ -34,11 +34,11 @@ const roadmapData = {
             id: 'medicina-investigativa',
             title: 'Medicina Veterinária Investigativa',
             subtopics: [
-                'Patologia e Tanatologia Forense',
-                'Direito e Ética Legal',
-                'Investigação de Maus-Tratos e Bem-Estar',
-                'Toxicologia e Entomologia Forense',
-                'Perícias Específicas'
+                { title: 'Patologia e Tanatologia Forense', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Direito e Ética Legal', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Investigação de Maus-Tratos e Bem-Estar', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Toxicologia e Entomologia Forense', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Perícias Específicas', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'}
             ],
             description: 'Perícia veterinária e investigação forense aplicada à medicina veterinária.',
             resources: ['Legislação Veterinária', 'Protocolos de Perícia', 'Casos Forenses'],

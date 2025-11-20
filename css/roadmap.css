@@ -1,17 +1,15 @@
-/* Reset and Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ------------------ HEADER ------------------ */
 
-/* Header */
 .roadmap-header {
     position: sticky;
     top: 0;
     z-index: 40;
     background: white;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.roadmap-header a {
+    text-decoration: none;
 }
 
 .header-content {
@@ -53,7 +51,8 @@
     color: #030213;
 }
 
-/* Main Content */
+/* ------------------ MAIN CONTENT & LEGEND ------------------ */
+
 .main-content {
     min-height: calc(100vh - 120px);
 }
@@ -64,7 +63,6 @@
     padding: 3rem 1.5rem;
 }
 
-/* Introduction */
 .intro-section {
     margin-bottom: 3rem;
     max-width: 48rem;
@@ -108,18 +106,24 @@
     background: #10b981;
 }
 
-/* Roadmap Container */
+/* ------------------ ROADMAP E NÓS ------------------ */
+
 .roadmap-container {
     position: relative;
+    /* Mantendo o margin-left do primeiro bloco, que é crucial para roadmap horizontal grande. */
+    margin-left: -10rem; 
     padding-bottom: 2rem;
+    /* Largura estática que sugere um scroll horizontal (do primeiro bloco). Se for 100%, remova. */
+    width: 2560px; 
 }
 
 .roadmap-path {
+    /* Alinhamento para roadmap horizontal (do primeiro bloco) */
     display: flex;
-    align-items: flex-start;
-    gap: 0;
+    align-items: center; 
     overflow-x: auto;
-    padding-bottom: 2rem;
+    padding-bottom: 10rem;
+    height: 400px; 
 }
 
 .roadmap-path-vertical {
@@ -129,12 +133,30 @@
     gap: 3rem;
 }
 
-/* Roadmap Node */
 .roadmap-node {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    position: relative;
+}
+
+/* Posicionamento dos títulos e subtópicos para o layout horizontal (do primeiro bloco) */
+.roadmap-path .roadmap-node .node-title {
+    position: absolute;
+    top: -2.5rem;
+    transform: translateX(-50%);
+    width: 150px;
+    text-align: center;
+    left: 50%;
+}
+
+.roadmap-path .roadmap-node .node-subtopics {
+    position: absolute;
+    bottom: -10rem;
+    width: 256px;
+    transform: translateX(-50%);
+    left: 50%;
 }
 
 .node-title {
@@ -232,10 +254,11 @@
     margin-top: 1.5rem;
 }
 
-/* Subtopics */
+/* ------------------ SUBTÓPICOS ------------------ */
+
 .node-subtopics {
-    margin-top: 1rem;
     width: 256px;
+    /* Removendo margin-top do segundo bloco para usar o posicionamento absoluto do primeiro */
 }
 
 .subtopics-card {
@@ -267,7 +290,8 @@
     flex-shrink: 0;
 }
 
-/* Info Message */
+/* ------------------ INFO MESSAGE ------------------ */
+
 .info-message {
     margin-top: 4rem;
     padding: 1.5rem;
@@ -282,7 +306,8 @@
     color: #1e40af;
 }
 
-/* Topic Detail Sidebar */
+/* ------------------ SIDEBAR (TOPIC DETAIL) ------------------ */
+
 .overlay {
     position: fixed;
     inset: 0;
@@ -503,16 +528,106 @@
     color: #92400e;
 }
 
-/* Responsive */
+/* ==================================== */
+/* 🌙 PARTE 2: DARK MODE (Consolidado) */
+/* ==================================== */
+
+/* Otimização: Agrupando seletores com o mesmo background e borda */
+body.dark-mode .roadmap-header,
+body.dark-mode .topic-detail,
+body.dark-mode .detail-header {
+    background: #1e1e1e; /* Fundo mais escuro para elementos "elevados" */
+}
+
+/* Borda e Sombra do Sidebar */
+body.dark-mode .topic-detail {
+    border-left: 1px solid #333333;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .roadmap-header,
+body.dark-mode .detail-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Títulos */
+body.dark-mode .node-title {
+    color: #ffffff;
+}
+
+/* Texto Secundário / Descrições */
+body.dark-mode .section-description,
+body.dark-mode .subtopic-item {
+    color: #a0a0a0;
+}
+
+/* Botão Outline */
+body.dark-mode .btn-outline {
+    background: #1e1e1e;
+    border: 1px solid #333333;
+    color: #f0f0f0;
+}
+body.dark-mode .btn-outline:hover {
+    background: #2a2a2a;
+}
+
+/* Cartões / Itens Interativos */
+body.dark-mode .subtopics-card,
+body.dark-mode .resource-item,
+body.dark-mode .subtopic-detail-item {
+    background: #2a2a2a; /* Fundo dos cartões escuro */
+    border: 1px solid #333333;
+}
+body.dark-mode .subtopics-card {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .subtopic-detail-item:hover {
+    background: #333333;
+}
+
+/* Texto Primário em Cartões */
+body.dark-mode .subtopic-detail-text,
+body.dark-mode .resource-text {
+    color: #f0f0f0;
+}
+
+/* ==================================== */
+/* 📱 PARTE 3: RESPONSIVIDADE E ANIMAÇÕES */
+/* ==================================== */
+
 @media (max-width: 1024px) {
     .roadmap-path {
         flex-direction: column;
         align-items: center;
         gap: 3rem;
+        /* Limpeza das regras horizontais de largura/margem: */
+        width: auto; 
+        margin-left: 0;
+        padding-bottom: 2rem;
+        height: auto;
+        /* Alinhamento dos itens: */
+        align-items: center;
     }
 
     .node-line {
         display: none;
+    }
+    
+    .roadmap-path .roadmap-node .node-title {
+        /* Remove o posicionamento absoluto para que o título flua normalmente acima do nó */
+        position: static; 
+        transform: none;
+        left: auto;
+    }
+    
+    .roadmap-path .roadmap-node .node-subtopics {
+        /* Remove o posicionamento absoluto para que os sub-tópicos fluam normalmente abaixo do nó */
+        position: static;
+        transform: none;
+        left: auto;
+        bottom: auto;
+        margin-top: 1rem; /* Adiciona margem entre o nó e a lista de subtópicos */
     }
 
     .overlay.show {
@@ -538,7 +653,23 @@
     }
 }
 
-/* Animations */
+/* Ajuste de Posicionamento para Telas Maiores (do primeiro bloco) */
+@media (min-width: 1025px) {
+    .roadmap-node {
+        position: relative;
+    }
+    
+    .roadmap-path .roadmap-node .node-subtopics {
+        bottom: -15rem; 
+        position: absolute;
+        top: unset; 
+        transform: translateX(-50%);
+        left: 50%;
+        width: 280px; /* Mantém a largura maior */
+    }
+}
+
+/* ANIMAÇÕES (Mantidas de ambos) */
 @keyframes slideInRight {
     from {
         right: -100%;

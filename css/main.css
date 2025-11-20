@@ -1,3 +1,10 @@
+* {
+    margin: 0;
+    padding: 0;
+    /* Mantendo o box-sizing no * garante que padding e border não afetem o width/height de TODOS os elementos. */
+    box-sizing: border-box; 
+}
+
 body {
     background-color: #f9f9f9;
     color: #333;
@@ -21,7 +28,6 @@ h1 {
     width: calc(33.333% - 20px); 
     height: 50px;
     margin: 10px;
-    box-sizing: border-box; 
     text-align: center;
 }
 
@@ -96,8 +102,8 @@ body.dark-mode header, body.dark-mode footer {
 }
 
 .switch-label {
-    width: 60px;
-    height: 34px;
+    width: 64px;
+    height: 38px;
     margin-left: 100px;
     border: 2px solid #ccc;
     position: relative;

@@ -1,31 +1,3 @@
-const body = document.body;
-const toggleCheckbox = document.getElementById('dark-mode-toggle');
-
-function applyMode(isDarkMode) {
-    if (isDarkMode) {
-        body.classList.add('dark-mode');
-        toggleCheckbox.checked = true;
-        localStorage.setItem('mode', 'dark');
-    } else {
-        body.classList.remove('dark-mode');
-        toggleCheckbox.checked = false;
-         localStorage.setItem('mode', 'light');
-        }
-    }
-
-const savedMode = localStorage.getItem('mode');
-const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-if (savedMode === 'dark' || (!savedMode && prefersDark)) {
-    applyMode(true);
-} else {
-    applyMode(false);
-}
-
-toggleCheckbox.addEventListener('change', (event) => {
-applyMode(event.currentTarget.checked);
-});
-
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('button-name-input');
     const createBtn = document.getElementById('create-button-btn');
