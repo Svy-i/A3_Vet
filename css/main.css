@@ -5,6 +5,34 @@
     box-sizing: border-box; 
 }
 
+.home-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #717182;
+}
+
+.home-btn svg {
+    color: #4388DD;
+}
+
+.home-btn:hover {
+    background: #f3f3f5;
+    color: #030213;
+}
+
+@media (max-width: 768px) {
+    .home-btn span {
+        display: none;
+    }
+}
+
 body {
     background-color: #f9f9f9;
     color: #333;
@@ -64,6 +92,15 @@ header nav {
     align-items: center; 
     width: 100%;
     padding: 10px;
+    position: relative;
+}
+
+header nav a[href="index.html"] {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    
+    z-index: 10;
 }
 
 .right {
@@ -77,6 +114,7 @@ header nav {
 a {
     color: #007bff;
     transition: color 0.5s;
+    text-decoration: none;
 }
 
 body.dark-mode {
