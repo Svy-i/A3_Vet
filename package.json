@@ -1,0 +1,11 @@
+{
+  "name": "a3-vet-server",
+  "version": "1.0.0",
+  "description": "Simple static server for A3_Vet-main project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT"
+}

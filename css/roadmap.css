@@ -671,6 +671,157 @@ body.dark-mode .notes-action-item.active {
     color: #92400e;
 }
 
+/* ------------------ VIDEO PANEL (LATERAL ESQUERDA) ------------------ */
+/* Controla a exibição de vídeos na lateral esquerda (Miniplayer/Sidebar) */
+/* ================================================================= */
+
+.video-panel {
+    position: fixed;
+    left: 0;
+    top: 72px; /* abaixo do cabeçalho */
+    width: 360px;
+    height: calc(100% - 72px);
+    background: var(--color-bg-primary); /* Variável Dark/Light Mode */
+    border-right: 1px solid var(--color-border); /* Variável Dark/Light Mode */
+    padding: 1rem;
+    overflow-y: auto;
+    z-index: 45;
+    transform: translateX(-100%); /* Esconde por padrão */
+    transition: transform 0.28s ease-in-out;
+}
+.video-panel.show {
+    transform: translateX(0); /* Mostra o painel */
+}
+.video-panel h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+}
+.video-panel .close-panel {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+}
+.video-panel-content {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.video-card {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.video-iframe {
+    width: 100%;
+    height: 200px;
+    border: 0;
+    display: block;
+}
+
+/* ------------------ Ajuste do Conteúdo principal ao abrir o Painel (miniplayer) */
+/* O JavaScript deve adicionar uma classe ao body ou container para ativar este estilo */
+.roadmap-container.shift-left {
+    margin-left: 360px; /* Move o conteúdo principal para a direita, dando espaço para o miniplayer */
+    width: calc(2560px - 360px); /* Ajusta a largura se a largura original for fixa */
+}
+
+
+/* ================================================================= */
+/* ------------------ VIDEO MODAL (CENTRAL) ------------------ */
+/* Controla a exibição de vídeos em uma janela modal no centro da tela */
+/* ================================================================= */
+
+.video-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+}
+.video-modal.show {
+    display: flex;
+}
+.video-modal-content {
+    width: min(900px, 95%);
+    background: var(--color-bg-primary);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    overflow: hidden;
+    position: relative;
+}
+.close-video-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 65;
+}
+.video-frame-wrap {
+    background: black;
+}
+.video-modal h3 {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #fff;
+    background: linear-gradient(90deg,var(--color-pink-primary),var(--color-blue-primary));
+}
+/* Estilo do iframe dentro do modal */
+.video-iframe {
+    width: 100%;
+    height: 56vw; /* 16:9 aspect ratio (56.25%) para preencher a largura */
+    max-height: 600px;
+    display: block;
+}
+
+/* ------------------ RESPONSIVIDADE ESPECÍFICA ------------------ */
+
+@media (max-width: 1024px) {
+    /* Esconde o painel lateral em tablets e dispositivos menores */
+    .video-panel { 
+        display: none; 
+    }
+    
+    /* Garante que o roadmap não se desloque se o painel estiver oculto */
+    .roadmap-container { 
+        margin-left: 0 !important; 
+    }
+}
+
+@media (max-width: 768px) {
+    /* Modal de tela cheia em dispositivos móveis */
+    .video-modal-content { 
+        width: 100%; 
+        height: 100%;
+        border-radius: 0;
+    }
+    .video-modal-content h3 { 
+        display: none; 
+    }
+    .video-iframe { 
+        height: 100%; 
+        max-height: 100vh;
+    }
+}
+
 /* ==================================== */
 /* 🌙 PARTE 2: DARK MODE (Consolidado) */
 /* ==================================== */
