@@ -67,5 +67,88 @@
     </div>
     <script src="js/conta.js"></script>
     <script src="js/theme.js"></script>
+
+<script type="module">
+  import { 
+    auth, 
+    db,
+    createUserWithEmailAndPassword, 
+    doc, 
+    setDoc 
+  } from './js/firebase.js';
+  
+  import { validarEmail, validarSenha, traduzErro } from './js/auth.js';
+
+  const form = document.getElementById('registerForm');
+  const message = document.getElementById('message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const nome = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('password').value;
+    const confirmSenha = document.getElementById('confirmPassword').value;
+    const nascimento = document.getElementById('dob').value;
+
+    // Validações
+    if (!nome) {
+      message.textContent = "Por favor, insira seu nome completo.";
+      message.style.color = '#e74c3c';
+      return;
+    }
+
+    if (!validarEmail(email)) {
+      message.textContent = "Por favor, insira um email válido.";
+      message.style.color = '#e74c3c';
+      return;
+    }
+
+    if (!validarSenha(senha)) {
+      message.textContent = "A senha deve ter no mínimo 6 caracteres.";
+      message.style.color = '#e74c3c';
+      return;
+    }
+
+    if (senha !== confirmSenha) {
+      message.textContent = "As senhas não coincidem.";
+      message.style.color = '#e74c3c';
+      return;
+    }
+
+    if (!nascimento) {
+      message.textContent = "Por favor, selecione sua data de nascimento.";
+      message.style.color = '#e74c3c';
+      return;
+    }
+
+    try {
+      message.textContent = "Registrando...";
+      message.style.color = '#3498db';
+
+      const cred = await createUserWithEmailAndPassword(auth, email, senha);
+      const uid = cred.user.uid;
+
+      // Salva dados adicionais no Firestore
+      await setDoc(doc(db, "usuarios", uid), {
+        nome: nome,
+        email: email,
+        nascimento: nascimento,
+        criadoEm: new Date().toISOString()
+      });
+
+      message.textContent = 'Cadastro realizado com sucesso!';
+      message.style.color = '#27ae60';
+      
+      setTimeout(() => {
+        window.location.href = 'perfil.html';
+      }, 1500);
+    } catch (err) {
+      message.textContent = traduzErro(err);
+      message.style.color = '#e74c3c';
+      console.error('Erro ao registrar:', err);
+    }
+  });
+</script>
 </body>
 </html>

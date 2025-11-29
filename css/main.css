@@ -52,11 +52,39 @@ h1 {
     justify-content: flex-start; 
 }
 
-#buttons-container .module-button-style {
-    width: calc(33.333% - 20px); 
-    height: 50px;
+#buttons-container .module-progress-wrapper {
+    /* Pegam as regras de layout do botão antigo */
+    width: calc(33.333% - 20px); /* 33.333% da largura do #buttons-container menos a margem */
     margin: 10px;
+    
+    /* Configuração para acomodar o botão e a barra em coluna */
+    height: 90px; /* Aumenta a altura para acomodar o botão (50px) + barra + margem */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* O link interno agora ocupa 100% da largura do seu container (o wrapper) */
+.module-progress-wrapper .module-button-style {
+    width: 100%; 
+    height: 50px; /* Mantém a altura original do botão */
+    margin: 0; /* Remove a margem, já definida no wrapper */
+}
+
+/* Estilo para a barra de progresso (Manter) */
+.home-progress {
+    margin-top: 10px; 
+    width: 100%; 
+    max-width: 200px;
     text-align: center;
+}
+
+.progress-text-small {
+    font-size: 0.8em;
+    margin-top: 5px;
+    font-weight: bold;
+    color: #4CAF50;
 }
 
 .module-button-style {
@@ -64,8 +92,10 @@ h1 {
     background: #fbca1f;
     color: black;
     font-family: inherit;
-    justify-content: center;
-    align-items: center;
+    /* Adicione/Mantenha estas duas linhas para centralizar o texto/conteúdo */
+    justify-content: center; 
+    align-items: center;     
+    
     padding: 0.6em 1.3em;
     font-weight: 900;
     font-size: 18px;
@@ -74,6 +104,8 @@ h1 {
     box-shadow: 0.1em 0.1em;
     cursor: pointer;
     text-decoration: none;
+    /* Certifique-se de que não haja nenhuma margem ou padding que desloque o texto */
+    text-align: center; /* Embora o flex resolva, mantemos por garantia */
 }
 
 .module-button-style:hover {
@@ -189,4 +221,71 @@ body.dark-mode header, body.dark-mode footer {
 
 input:checked + .switch-label + .background {
     background: #242424;
+}
+
+.progress-container {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 14px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar .fill {
+    height: 100%;
+    width: 0%;
+    background: #4CAF50;
+    transition: width 0.3s ease-in-out;
+}
+
+.topic {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.topic input {
+    margin-right: 8px;
+}
+
+/* css main (ADICIONE NO FINAL) */
+
+/* Wrapper para alinhar botão e barra na Home */
+.module-progress-wrapper {
+    /* Garante que o wrapper ocupe o mesmo espaço do botão na grid original */
+    width: calc(33.333% - 20px); 
+    height: 90px; /* Aumenta a altura para acomodar a barra */
+    margin: 10px;
+    display: flex;
+    flex-direction: column; /* Organiza botão e barra em coluna */
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Garante que o botão use a largura total do wrapper */
+.module-progress-wrapper .module-button-style {
+    width: 100%; /* Ocupa a largura total do wrapper */
+    margin: 0; /* Remove margem desnecessária do botão */
+    height: 50px;
+}
+
+.progress-text-small {
+    font-size: 0.8em;
+    margin-top: 5px;
+    font-weight: bold;
+    color: #4CAF50; /* Cor do progresso */
+}
+
+/* Media Query para telas menores */
+@media (max-width: 768px) {
+    .module-progress-wrapper {
+        width: calc(50% - 20px); /* Ajuste o layout em telas menores se necessário */
+    }
+    .module-progress-wrapper:nth-child(n+3) { /* Exemplo: 2 por linha */
+        /* ... estilos */
+    }
 }

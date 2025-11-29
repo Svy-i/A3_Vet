@@ -319,26 +319,168 @@
     right: 0;
 }
 
-.detail-header {
-    position: sticky;
-    top: 0;
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 1.5rem;
-    z-index: 10;
+.topic-detail .detail-header {
+    /* Mantém o layout flex para alinhar o título/status à esquerda e os botões à direita */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 20px 10px 20px;
+}
+
+.detail-header-actions {
+    display: flex;
+    gap: 0; /* Não precisa de gap, pois só tem um botão (o de fechar) */
+    align-items: center;
 }
 
 .detail-header-content {
+    /* Mantém o alinhamento principal em coluna (Título em cima, Status/Anotações embaixo) */
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    /* Remover a margem-direita grande se você a adicionou na última revisão, pois não é mais necessária aqui */
+    margin-right: 0; 
+}
+
+.header-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s, transform 0.1s;
+    color: var(--color-text-primary); /* Use a cor do texto principal */
+}
+
+.header-action-btn:hover {
+    background-color: var(--color-bg-secondary); /* Cor de fundo ao passar o mouse */
+    transform: scale(1.05);
+}
+
+.notes-label {
+    /* Remove o estilo de botão circular/ícone */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s, transform 0.1s;
+    font-size: 14px; /* Tamanho da fonte similar ao de um link secundário */
+    font-weight: 600;
+    color: var(--color-text-secondary); /* Cor secundária sutil */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.notes-label:hover {
+    color: var(--color-pink-primary); /* Destaca ao passar o mouse */
+    background-color: transparent;
+    transform: none; /* Remove a transformação de escala */
+}
+
+/* Estilo do botão de anotações quando ATIVO (A área está aberta) */
+#notesBtn.active {
+    color: var(--color-pink-primary);
+    /* Ajusta o padding-bottom para compensar a borda inferior e manter a linha do texto */
+    padding-bottom: 2px; 
+    border-bottom: 2px solid var(--color-pink-primary);
+}
+
+/* --- Área de Anotações (escondida por padrão) --- */
+
+.notes-area {
+    padding: 0 20px;
+    max-height: 0; 
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.notes-area.show {
+    max-height: 250px; 
+    padding: 10px 20px 20px 20px;
+}
+
+.notes-action-item {
+    /* Base do estilo Resource Item */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Espaçamento entre o ícone e o texto */
+    padding: 0.25rem 0.75rem; /* Reduz o padding para se aproximar do status-badge */
+    font-size: 0.875rem; /* Mantém 14px, que é o tamanho comum para esses elementos */
+    line-height: 1.25rem; /* Adiciona line-height para ajudar no alinhamento vertical */
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb; /* Borda padrão */
+    color: #374151;
+    background: #f9fafb; /* Fundo sutil */
+    
+    /* Configurações de clique */
+    cursor: pointer;
+    transition: all 0.2s;
+
+    /* Reset de botão */
+    background-color: transparent;
+    font-size: 0.875rem; /* Tamanho da fonte igual ao do resource item */
+}
+
+.notes-action-item .notes-text {
+    font-size: 0.875rem;
+}
+
+.notes-action-item svg {
+    width: 14px; /* Tamanho do ícone um pouco menor */
+    height: 14px;
+}
+
+.notes-action-item:hover {
+    border-color: #FF4581; /* Destaque ao passar o mouse com a cor primária */
+    color: #FF4581;
+    background: #f3f4f6;
+}
+
+.notes-action-item.active {
+    background: #fef3f6; /* Fundo levemente rosado/destacado */
+    color: #FF4581;
+    border-color: #FF4581; /* Borda destacada */
+}
+
+.notes-action-item .icon-pink {
+    color: #FF4581; /* Garante que o ícone é rosa/destaque */
+}
+
+body.dark-mode .notes-action-item {
+    background: #2a2a2a; 
+    border: 1px solid #333333;
+    /* 🚨 COR DO TEXTO NO DARK MODE */
+    color: #f0f0f0; /* Cor clara para Dark Mode */
+}
+
+body.dark-mode .notes-action-item:hover {
+    background: #333333;
+    border-color: #f0f0f0; 
+}
+
+body.dark-mode .notes-action-item.active {
+    background: #3a2535; /* Fundo escuro sutilmente rosado */
+    border-color: #FF4581;
+    color: #FF4581; /* O texto ativo continua rosa para contraste e destaque */
+}
+
+#topicNotes {
+    /* Mantido o estilo de textarea */
+    width: 100%;
+    min-height: 200px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .close-btn {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
     background: none;
     border: none;
     cursor: pointer;
@@ -351,6 +493,14 @@
 .close-btn:hover {
     background: #f3f4f6;
     color: #111827;
+}
+
+.status-and-actions {
+    /* NOVO: Usa flexbox para alinhar o Status e o rótulo Anotações horizontalmente */
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espaço entre o Status (badge) e o rótulo Anotações */
+    margin-top: 5px; /* Pequena margem para separar do título se o gap do .detail-header-content for pequeno */
 }
 
 .status-badge {
@@ -465,6 +615,19 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+}
+
+.detail-actions .btn-outline.completed {
+    background-color: #f72585;
+    color: white;
+    border-color: #f72585;
+    /* Opcional: Adicionar um ícone de check se quiser */
+}
+
+.detail-actions .btn-outline {
+    background-color: transparent;
+    border: 2px solid #f72585;
+    color: #f72585;
 }
 
 .btn {
