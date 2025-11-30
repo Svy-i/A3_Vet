@@ -124,7 +124,7 @@ header nav {
     align-items: center; 
     width: 100%;
     padding: 10px;
-    position: relative;
+    justify-content: space-between;
 }
 
 header nav a[href="index.html"] {
@@ -135,12 +135,23 @@ header nav a[href="index.html"] {
     z-index: 10;
 }
 
-.right {
-    margin-right: 35px;
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
 }
 
-.right:first-of-type {
-    margin-left: auto;
+.nav-right a {
+    margin-left: 20px; /* Espaçamento entre Login e Cadastre-se */
+}
+
+.switch-label {
+    width: 64px;
+    height: 38px;
+    margin-left: 10px;
+}
+
+.nav-right a:last-child {
+    margin-right: 10px;
 }
 
 a {
@@ -174,7 +185,7 @@ body.dark-mode header, body.dark-mode footer {
 .switch-label {
     width: 64px;
     height: 38px;
-    margin-left: 100px;
+    margin-left: 40px;
     border: 2px solid #ccc;
     position: relative;
     display: block;
@@ -252,6 +263,38 @@ input:checked + .switch-label + .background {
     margin-right: 8px;
 }
 
+/* Novo estilo para o botão de perfil */
+.profile-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; /* Largura igual à altura do switch-label para alinhamento visual */
+    height: 38px;
+    margin-left: 20px; /* Adiciona uma margem esquerda para separação da borda */
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    color: #333; /* Cor do ícone em modo claro */
+    text-decoration: none; /* Garante que não tenha sublinhado */
+}
+
+.profile-btn:hover {
+    background: #f3f3f5;
+}
+
+.profile-btn svg {
+    /* Ajusta a cor do ícone, mantendo-o visível */
+    stroke: currentColor; 
+}
+
+/* Estilo do botão de perfil em dark mode */
+body.dark-mode .profile-btn {
+    color: #f0f0f0; /* Cor do ícone em modo escuro */
+}
+
+body.dark-mode .profile-btn:hover {
+    background: #2e2e2e;
+}
+
 /* css main (ADICIONE NO FINAL) */
 
 /* Wrapper para alinhar botão e barra na Home */
@@ -284,8 +327,5 @@ input:checked + .switch-label + .background {
 @media (max-width: 768px) {
     .module-progress-wrapper {
         width: calc(50% - 20px); /* Ajuste o layout em telas menores se necessário */
-    }
-    .module-progress-wrapper:nth-child(n+3) { /* Exemplo: 2 por linha */
-        /* ... estilos */
     }
 }

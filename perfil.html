@@ -31,9 +31,8 @@
 
     <div class="login-container">
         <h1>Perfil do Usuário</h1>
-        <div id="user-info">
-            <p id="boas-vindas">Carregando...</p>
-            <p id="user-email"></p>
+                <div id="user-info" style="display: none;">
+            <p id="boas-vindas"></p>             <p id="user-email"></p>
             <p id="user-dob"></p>
             <p id="user-created"></p>
         </div>
@@ -41,52 +40,7 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module">
-        import { auth, onAuthStateChanged, signOut } from './js/firebase.js';
-        import { getUserData } from './js/auth.js';
-
-        const boasVindas = document.getElementById('boas-vindas');
-        const userEmail = document.getElementById('user-email');
-        const userDob = document.getElementById('user-dob');
-        const userCreated = document.getElementById('user-created');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        // Protege a página: só mostra se o usuário estiver logado
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                boasVindas.textContent = `Bem-vindo, ${user.displayName || user.email}`;
-                userEmail.textContent = `Email: ${user.email}`;
-
-                // Busca dados adicionais do Firestore
-                const userData = await getUserData(user.uid);
-                if (userData) {
-                    if (userData.nome) {
-                        boasVindas.textContent = `Bem-vindo, ${userData.nome}`;
-                    }
-                    if (userData.nascimento) {
-                        userDob.textContent = `Data de Nascimento: ${userData.nascimento}`;
-                    }
-                    if (userData.criadoEm) {
-                        const date = new Date(userData.criadoEm).toLocaleDateString('pt-BR');
-                        userCreated.textContent = `Membro desde: ${date}`;
-                    }
-                }
-            }
-        });
-
-        // Logout
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                alert('Você saiu da conta.');
-                window.location.href = 'index.html';
-            } catch (err) {
-                alert('Erro ao sair: ' + err.message);
-            }
-        });
-    </script>
+    <script type="module" src="js/conta.js"></script>
     <script src="js/theme.js"></script>
 </body>
 </html>
