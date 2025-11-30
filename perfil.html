@@ -5,6 +5,25 @@
     <meta name="author" content="Svy">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jornada Vet - Perfil</title>
+    <script>
+        (function() {
+            let savedTheme = localStorage.getItem('themePreference'); 
+            let isDarkMode = false;
+            
+            if (savedTheme === 'dark') {
+                isDarkMode = true;
+            } else if (savedTheme === 'light') {
+                isDarkMode = false;
+            } else {
+                isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+
+            if (isDarkMode) {
+                // Adiciona a classe dark-mode na tag <html> ou <body> ANTES do CSS
+                document.documentElement.classList.add('dark-mode');
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/conta.css">
 </head>
@@ -40,9 +59,8 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="js/firebase.js"></script>
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/theme.js"></script>
     <script type="module" src="js/conta.js"></script>
+    <script type="module" src="js/theme.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

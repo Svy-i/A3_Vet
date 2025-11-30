@@ -1,5 +1,5 @@
 // Roadmap data
-export const roadmapData = {
+const roadmapData = {
     title: 'Módulo Medicina Veterinária',
     topics: [
         {
@@ -46,8 +46,13 @@ export const roadmapData = {
         },
         {
             id: 'placeholder-1',
-            title: 'Placeholder',
-            subtopics: [],
+            title: 'Imunologia e Vacinação',
+            subtopics: [
+                { title: 'Imunidade inata e adaptativa em cães e gatos', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Tipos de vacinas (vivas atenuadas, inativadas, recombinantes)', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Doenças preveníveis por vacinação', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'},
+                { title: 'Protocolos vacinais para diferentes espécies e faixas etárias', url: 'https://www.youtube.com/watch?v=Gw4rBSBtfg8'}  
+            ],
             isPlaceholder: true,
             status: 'not-started'
         },

@@ -29,8 +29,6 @@
     margin-top: 0.5rem;
 }
 
-
-
 /* ------------------ MAIN CONTENT & LEGEND ------------------ */
 
 .main-content {
@@ -350,7 +348,8 @@
     padding: 5px;
     border-radius: 50%;
     transition: background-color 0.2s, transform 0.1s;
-    color: var(--color-text-primary); /* Use a cor do texto principal */
+    /* Corrigir para usar a cor do texto principal do Dark Mode */
+    color: var(--color-text-primary); 
 }
 
 .header-action-btn:hover {
@@ -447,23 +446,24 @@
     color: #FF4581; /* Garante que o ícone é rosa/destaque */
 }
 
-body.dark-mode .notes-action-item {
+/* ESTILOS DE DARK MODE PARA NOTES ACTION ITEM */
+html.dark-mode .notes-action-item {
     background: #2a2a2a; 
     border: 1px solid #333333;
-    /* 🚨 COR DO TEXTO NO DARK MODE */
-    color: #f0f0f0; /* Cor clara para Dark Mode */
+    color: #f0f0f0; 
 }
 
-body.dark-mode .notes-action-item:hover {
+html.dark-mode .notes-action-item:hover {
     background: #333333;
     border-color: #f0f0f0; 
 }
 
-body.dark-mode .notes-action-item.active {
+html.dark-mode .notes-action-item.active {
     background: #3a2535; /* Fundo escuro sutilmente rosado */
     border-color: #FF4581;
-    color: #FF4581; /* O texto ativo continua rosa para contraste e destaque */
+    color: #FF4581; 
 }
+
 
 #topicNotes {
     /* Mantido o estilo de textarea */
@@ -827,63 +827,97 @@ body.dark-mode .notes-action-item.active {
 /* ==================================== */
 
 /* Otimização: Agrupando seletores com o mesmo background e borda */
-body.dark-mode .roadmap-header,
-body.dark-mode .topic-detail,
-body.dark-mode .detail-header {
+html.dark-mode .roadmap-header,
+html.dark-mode .topic-detail,
+html.dark-mode .detail-header {
     background: #1e1e1e; /* Fundo mais escuro para elementos "elevados" */
 }
 
 /* Borda e Sombra do Sidebar */
-body.dark-mode .topic-detail {
+html.dark-mode .topic-detail {
     border-left: 1px solid #333333;
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
 }
 
-body.dark-mode .roadmap-header,
-body.dark-mode .detail-header {
+html.dark-mode .roadmap-header,
+html.dark-mode .detail-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Títulos */
-body.dark-mode .node-title {
-    color: #ffffff;
+html.dark-mode .node-title {
+    color: white; 
+}
+
+/* ⭐️ CORREÇÃO FINAL: Título principal da sidebar e títulos de seção brancos */
+/* 1. Garante que o H2 do título principal fique branco */
+html.dark-mode #detailTitle,
+/* 2. Garante que qualquer título dentro do .detail-header-content (como um h1/h2) fique branco */
+html.dark-mode .detail-header-content,
+/* 3. Força a cor branca para o cabeçalho das seções (onde fica "Conteúdo Programático") */
+html.dark-mode .section-header, 
+html.dark-mode .section-header * { 
+    color: #f0f0f0 !important; /* Força a cor para branco em todos os textos de título primário */
 }
 
 /* Texto Secundário / Descrições */
-body.dark-mode .section-description,
-body.dark-mode .subtopic-item {
+html.dark-mode .section-description,
+html.dark-mode .subtopic-item {
     color: #a0a0a0;
 }
 
 /* Botão Outline */
-body.dark-mode .btn-outline {
+html.dark-mode .btn-outline {
     background: #1e1e1e;
     border: 1px solid #333333;
     color: #f0f0f0;
 }
-body.dark-mode .btn-outline:hover {
+html.dark-mode .btn-outline:hover {
     background: #2a2a2a;
 }
 
 /* Cartões / Itens Interativos */
-body.dark-mode .subtopics-card,
-body.dark-mode .resource-item,
-body.dark-mode .subtopic-detail-item {
+html.dark-mode .subtopics-card,
+html.dark-mode .resource-item,
+html.dark-mode .subtopic-detail-item {
     background: #2a2a2a; /* Fundo dos cartões escuro */
     border: 1px solid #333333;
 }
-body.dark-mode .subtopics-card {
+html.dark-mode .subtopics-card {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-body.dark-mode .subtopic-detail-item:hover {
+html.dark-mode .subtopic-detail-item:hover {
     background: #333333;
 }
 
 /* Texto Primário em Cartões */
-body.dark-mode .subtopic-detail-text,
-body.dark-mode .resource-text {
+html.dark-mode .subtopic-detail-text,
+html.dark-mode .resource-text {
     color: #f0f0f0;
+}
+
+/* ⭐️ Correção do ícone de recurso */
+html.dark-mode .resource-item svg {
+    color: #d1d1d1; /* Cinza claro para o ícone */
+}
+
+/* ------------------ ESTILOS DE DARK MODE PARA NOTES ACTION ITEM (Mantidos) */
+html.dark-mode .notes-action-item {
+    background: #2a2a2a; 
+    border: 1px solid #333333;
+    color: #f0f0f0; 
+}
+
+html.dark-mode .notes-action-item:hover {
+    background: #333333;
+    border-color: #f0f0f0; 
+}
+
+html.dark-mode .notes-action-item.active {
+    background: #3a2535; /* Fundo escuro sutilmente rosado */
+    border-color: #FF4581;
+    color: #FF4581; 
 }
 
 /* ==================================== */

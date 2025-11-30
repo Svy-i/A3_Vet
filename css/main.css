@@ -37,12 +37,47 @@ body {
     background-color: #f9f9f9;
     color: #333;
     transition: background-color 0.5s, color 0.5s;
-    width: 100%; 
-    overflow-x: hidden;
+}
+
+/* 🚨 NOVO: Altere de body.dark-mode para html.dark-mode (ou :root.dark-mode) */
+html.dark-mode body,
+:root.dark-mode {
+    background-color: #121212; 
+}
+
+/* 🚨 NOVO: Adapte todos os seletores body.dark-mode para html.dark-mode */
+html.dark-mode a {
+    color: #4a90e2; 
+}
+
+html.dark-mode .module-button-style {
+    color: black;
+}
+
+html.dark-mode header, html.dark-mode footer {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+}
+
+html.dark-mode .profile-btn {
+    color: #f0f0f0; /* Cor do ícone em modo escuro */
+}
+
+html.dark-mode .profile-btn:hover {
+    background: #2e2e2e;
 }
 
 h1 {
     text-align: center;
+}
+
+/* 2. H1: Forçar cor branca no Dark Mode */
+html.dark-mode h1 {
+    color: #f0f0f0;
+}
+
+html.dark-mode .login-container h1 {
+    color: #333;
 }
 
 #buttons-container {
@@ -162,24 +197,6 @@ a {
     text-decoration: none;
 }
 
-body.dark-mode {
-    background-color: #121212; 
-    color: #f0f0f0;
-}
-
-body.dark-mode a {
-    color: #4a90e2; 
-}
-
-body.dark-mode .module-button-style {
-    color: black;
-}
-
-body.dark-mode header, body.dark-mode footer {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
-}
-
 #dark-mode-toggle {
     display: none;
 }
@@ -288,11 +305,38 @@ input:checked + .switch-label + .background {
     stroke: currentColor; 
 }
 
-/* Estilo do botão de perfil em dark mode */
-body.dark-mode .profile-btn {
-    color: #f0f0f0; /* Cor do ícone em modo escuro */
+
+/* css main (ADICIONE NO FINAL) */
+
+/* Wrapper para alinhar botão e barra na Home */
+.module-progress-wrapper {
+    /* Garante que o wrapper ocupe o mesmo espaço do botão na grid original */
+    width: calc(33.333% - 20px); 
+    height: 90px; /* Aumenta a altura para acomodar a barra */
+    margin: 10px;
+    display: flex;
+    flex-direction: column; /* Organiza botão e barra em coluna */
+    align-items: center;
+    justify-content: flex-start;
 }
 
-body.dark-mode .profile-btn:hover {
-    background: #2e2e2e;
+/* Garante que o botão use a largura total do wrapper */
+.module-progress-wrapper .module-button-style {
+    width: 100%; /* Ocupa a largura total do wrapper */
+    margin: 0; /* Remove margem desnecessária do botão */
+    height: 50px;
+}
+
+.progress-text-small {
+    font-size: 0.8em;
+    margin-top: 5px;
+    font-weight: bold;
+    color: #4CAF50; /* Cor do progresso */
+}
+
+/* Media Query para telas menores */
+@media (max-width: 768px) {
+    .module-progress-wrapper {
+        width: calc(50% - 20px); /* Ajuste o layout em telas menores se necessário */
+    }
 }
