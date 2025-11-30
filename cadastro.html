@@ -1,154 +1,176 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="author" content="Svy">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jornada Vet</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/conta.css">
+  <meta charset="UTF-8">
+  <meta name="author" content="Svy">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jornada Vet</title>
+  <script>
+    (function () {
+      let savedTheme = localStorage.getItem('themePreference');
+      let isDarkMode = false;
+
+      if (savedTheme === 'dark') {
+        isDarkMode = true;
+      } else if (savedTheme === 'light') {
+        isDarkMode = false;
+      } else {
+        isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      if (isDarkMode) {
+        // Adiciona a classe dark-mode na tag <html> ou <body> ANTES do CSS
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/conta.css">
 </head>
+
 <body>
-    <header>
-        <nav aria-label="primary-navigation">
-            <input type="checkbox" id="dark-mode-toggle">
-            <label for="dark-mode-toggle" class="switch-label"></label>
-            <a href="index.html">
-                <button id="homeBtn" class="home-btn" aria-label="Início">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                    <span>Início</span>
-                </button>
-            </a>
-        </nav>
-    </header>
-    <hr>
-    <div class="login-container">
-        <h1>Cadastre-se</h1>
-
-        <button type="button" class="google-btn">
-            <img src="images/google.png" alt="Logo da Google">Continue com a conta Google
+  <header>
+    <nav aria-label="primary-navigation">
+      <input type="checkbox" id="dark-mode-toggle">
+      <label for="dark-mode-toggle" class="switch-label"></label>
+      <a href="index.html">
+        <button id="homeBtn" class="home-btn" aria-label="Início">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Início</span>
         </button>
-        
-        <p class="separator">OU</p>
-        <form id="registerForm">
+      </a>
+    </nav>
+  </header>
+  <hr>
+  <div class="login-container">
+    <h1>Cadastre-se</h1>
 
-            <div class="input-group">
-                <label for="name">Nome Completo</label>
-                <input type="text" id="name" name="name" required>
-            </div>
+    <button type="button" class="google-btn">
+      <img src="images/google.png" alt="Logo da Google">Continue com a conta Google
+    </button>
 
-            <div class="input-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            
-            <div class="input-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            
-                        <div class="input-group">
-                <label for="confirmPassword">Confirme a Senha</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required>
-            </div>
+    <p class="separator">OU</p>
+    <form id="registerForm">
 
-            <div class="input-group">
-                <label for="dob">Data de Nascimento</label>
-                <input type="date" id="dob" name="dob" required>
-            </div>
+      <div class="input-group">
+        <label for="name">Nome Completo</label>
+        <input type="text" id="name" name="name" required>
+      </div>
 
-                        <button type="submit">Registrar</button>
-            <p id="message" class="error-message"></p>
-        </form>
-    </div>
-    <script src="js/conta.js"></script>
-    <script src="js/theme.js"></script>
+      <div class="input-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" required>
+      </div>
 
-<script type="module">
-  import { 
-    auth, 
-    db,
-    createUserWithEmailAndPassword, 
-    doc, 
-    setDoc 
-  } from './js/firebase.js';
-  
-  import { validarEmail, validarSenha, traduzErro } from './js/auth.js';
+      <div class="input-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" required>
+      </div>
 
-  const form = document.getElementById('registerForm');
-  const message = document.getElementById('message');
+      <div class="input-group">
+        <label for="confirmPassword">Confirme a Senha</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required>
+      </div>
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+      <div class="input-group">
+        <label for="dob">Data de Nascimento</label>
+        <input type="date" id="dob" name="dob" required>
+      </div>
 
-    const nome = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const senha = document.getElementById('password').value;
-    const confirmSenha = document.getElementById('confirmPassword').value;
-    const nascimento = document.getElementById('dob').value;
+      <button type="submit">Registrar</button>
+      <p id="message" class="error-message"></p>
+    </form>
+  </div>
 
-    // Validações
-    if (!nome) {
-      message.textContent = "Por favor, insira seu nome completo.";
-      message.style.color = '#e74c3c';
-      return;
-    }
+  <script type="module">
+    import {
+      auth,
+      db,
+      createUserWithEmailAndPassword,
+      doc,
+      setDoc
+    } from './js/firebase.js';
 
-    if (!validarEmail(email)) {
-      message.textContent = "Por favor, insira um email válido.";
-      message.style.color = '#e74c3c';
-      return;
-    }
+    import { validarEmail, validarSenha, traduzErro } from './js/auth.js';
 
-    if (!validarSenha(senha)) {
-      message.textContent = "A senha deve ter no mínimo 6 caracteres.";
-      message.style.color = '#e74c3c';
-      return;
-    }
+    const form = document.getElementById('registerForm');
+    const message = document.getElementById('message');
 
-    if (senha !== confirmSenha) {
-      message.textContent = "As senhas não coincidem.";
-      message.style.color = '#e74c3c';
-      return;
-    }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    if (!nascimento) {
-      message.textContent = "Por favor, selecione sua data de nascimento.";
-      message.style.color = '#e74c3c';
-      return;
-    }
+      const nome = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('password').value;
+      const confirmSenha = document.getElementById('confirmPassword').value;
+      const nascimento = document.getElementById('dob').value;
 
-    try {
-      message.textContent = "Registrando...";
-      message.style.color = '#3498db';
+      // Validações
+      if (!nome) {
+        message.textContent = "Por favor, insira seu nome completo.";
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-      const cred = await createUserWithEmailAndPassword(auth, email, senha);
-      const uid = cred.user.uid;
+      if (!validarEmail(email)) {
+        message.textContent = "Por favor, insira um email válido.";
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-      // Salva dados adicionais no Firestore
-      await setDoc(doc(db, "usuarios", uid), {
-        nome: nome,
-        email: email,
-        nascimento: nascimento,
-        criadoEm: new Date().toISOString()
-      });
+      if (!validarSenha(senha)) {
+        message.textContent = "A senha deve ter no mínimo 6 caracteres.";
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-      message.textContent = 'Cadastro realizado com sucesso!';
-      message.style.color = '#27ae60';
-      
-      setTimeout(() => {
-        window.location.href = 'perfil.html';
-      }, 1500);
-    } catch (err) {
-      message.textContent = traduzErro(err);
-      message.style.color = '#e74c3c';
-      console.error('Erro ao registrar:', err);
-    }
-  });
-</script>
+      if (senha !== confirmSenha) {
+        message.textContent = "As senhas não coincidem.";
+        message.style.color = '#e74c3c';
+        return;
+      }
+
+      if (!nascimento) {
+        message.textContent = "Por favor, selecione sua data de nascimento.";
+        message.style.color = '#e74c3c';
+        return;
+      }
+
+      try {
+        message.textContent = "Registrando...";
+        message.style.color = '#3498db';
+
+        const cred = await createUserWithEmailAndPassword(auth, email, senha);
+        const uid = cred.user.uid;
+
+        // Salva dados adicionais no Firestore
+        await setDoc(doc(db, "usuarios", uid), {
+          nome: nome,
+          email: email,
+          nascimento: nascimento,
+          criadoEm: new Date().toISOString()
+        });
+
+        message.textContent = 'Cadastro realizado com sucesso!';
+        message.style.color = '#27ae60';
+
+        setTimeout(() => {
+          window.location.href = 'perfil.html';
+        }, 1500);
+      } catch (err) {
+        message.textContent = traduzErro(err);
+        message.style.color = '#e74c3c';
+        console.error('Erro ao registrar:', err);
+      }
+    });
+  </script>
+  <script type="module" src="js/theme.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
+
 </html>

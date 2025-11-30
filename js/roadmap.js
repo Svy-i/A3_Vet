@@ -450,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const subtopicsDiv = document.getElementById('detailSubtopics');
         if (topic.subtopics && topic.subtopics.length > 0) {
             subtopicsDiv.innerHTML = `
-                <h3>Conteúdo Programático</h3>
+                <div class="section-header">${icons.bookOpen}<h3>Conteúdo Programático</h3></div>
                 <ul class="subtopics-detail-list">
                     ${topic.subtopics.map(subtopic => `
                         <li class="subtopic-detail-item">

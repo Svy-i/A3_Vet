@@ -1,5 +1,5 @@
 // Roadmap data
-const roadmapData = {
+export const roadmapData = {
     title: 'Módulo Medicina Veterinária',
     topics: [
         {

@@ -1,14 +1,26 @@
-import { auth, onAuthStateChanged, signOut } from './firebase.js';
-import { getUserData } from './auth.js';
+// js/conta.js
 
-// 🎯 1. Previne o carregamento do cache (BFCache)
+import { auth, signOut } from './firebase.js';
+import { initAuthListener } from './auth.js'; 
+
+// ----------------------------------------------------
+// 🎯 FUNÇÕES AUXILIARES
+// ----------------------------------------------------
+
+/**
+ * Previne o carregamento de cache (BFCache) em navegadores para garantir
+ * que a autenticação seja verificada em cada visita.
+ */
 window.addEventListener('pageshow', function (event) {
     if (event.persisted) {
         window.location.reload();
     }
 });
 
-// Garante que todo o script só rode após o DOM estar pronto
+// ----------------------------------------------------
+// 🚀 INICIALIZAÇÃO E LÓGICA PRINCIPAL
+// ----------------------------------------------------
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // 🎯 VARIÁVEIS DE DOM
@@ -19,74 +31,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const userCreated = document.getElementById('user-created');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // ----------------------------------------------------
-    // LÓGICA DE PROTEÇÃO DE PÁGINA E CARREGAMENTO DE DADOS
-    // ----------------------------------------------------
-    onAuthStateChanged(auth, async (user) => {
+    // Inicializa o listener de autenticação unificado
+    initAuthListener((user) => {
         if (!user) {
-            // Se deslogado, redireciona imediatamente
+            // Se deslogado, redireciona
+            console.log("Usuário deslogado. Redirecionando para login.");
+            if (userInfoDiv) {
+                userInfoDiv.style.display = 'none';
+            }
             window.location.replace('login.html');
         } else {
-            // Se logado, torna o conteúdo visível
-            if (userInfoDiv) {
-                userInfoDiv.style.display = 'block'; 
-            }
+            // 1. POPULA DADOS DO PERFIL
             
-            // Popula as informações iniciais (Firebase Auth)
-            if (boasVindas && userEmail) { 
-                boasVindas.textContent = `Bem-vindo, ${user.displayName || user.email}`;
+            // Boas-vindas e Email (obrigatórios)
+            if (boasVindas && userEmail) {
+                const nomeParaExibir = user.nome || user.displayName || user.email;
+                boasVindas.textContent = `Bem-vindo(a), ${nomeParaExibir}`;
                 userEmail.textContent = `Email: ${user.email}`;
             }
 
-            // Busca dados adicionais do Firestore
-            const userData = await getUserData(user.uid);
-            if (userData) {
-                if (userData.nome && boasVindas) {
-                    boasVindas.textContent = `Bem-vindo, ${userData.nome}`;
+            // Data de Nascimento (opcional - dado do Firestore)
+            if (userDob) {
+                userDob.textContent = user.nascimento 
+                    ? `Data de Nascimento: ${user.nascimento}` 
+                    : 'Data de Nascimento: Não informada';
+            }
+
+            // Membro desde (dado do Firestore ou Firebase Auth Metadata)
+            if (userCreated) {
+                let dataMembro;
+                if (user.criadoEm) {
+                    dataMembro = new Date(user.criadoEm);
+                } else if (user.metadata?.creationTime) {
+                    dataMembro = new Date(user.metadata.creationTime);
                 }
-                if (userData.nascimento && userDob) {
-                    userDob.textContent = `Data de Nascimento: ${userData.nascimento}`;
+
+                if (dataMembro) {
+                    userCreated.textContent = `Membro desde: ${dataMembro.toLocaleDateString('pt-BR')}`;
+                } else {
+                    userCreated.textContent = 'Membro desde: Informação indisponível';
                 }
-                if (userData.criadoEm && userCreated) {
-                    const date = new Date(userData.criadoEm).toLocaleDateString('pt-BR');
-                    userCreated.textContent = `Membro desde: ${date}`;
-                }
+            }
+            
+            // 🎯 CORREÇÃO DO FLASH: Torna o conteúdo visível
+            // O tema já foi sincronizado pelo theme.js antes de chegarmos aqui.
+            if (userInfoDiv) {
+                userInfoDiv.style.display = 'block'; 
             }
         }
     });
 
     // ----------------------------------------------------
-    // LÓGICA DO BOTÃO DE LOGOUT (AGORA SEMPRE REGISTRADA)
+    // LÓGICA DO BOTÃO DE LOGOUT
     // ----------------------------------------------------
     if (logoutBtn) {
-        console.log("Verificação do Botão Logout: Listener registrado com sucesso.");
-        
-        logoutBtn.addEventListener('click', () => {
-            console.log("1. Tentando signOut...");
+        logoutBtn.addEventListener('click', async () => {
+            if (!confirm('Tem certeza que deseja sair da conta?')) return;
             
-            signOut(auth)
-                .then(() => {
-                    console.log("2. SUCESSO: Logout do Firebase CONCLUÍDO!"); 
-                    
-                    // 🎯 AÇÃO CRÍTICA: Limpeza Forçada do LocalStorage
-                    localStorage.clear();
-                    
-                    // Oculta a div imediatamente para evitar flashes
-                    if (userInfoDiv) {
-                        userInfoDiv.style.display = 'none';
-                    }
-
-                    alert('Você saiu da conta.');
-                    
-                    // Redirecionamento (replace é crucial)
-                    window.location.replace('index.html');
-                })
-                .catch((error) => {
-                    console.error("3. FALHA NO LOGOUT:", error);
-                    alert('Erro ao sair: ' + error.message);
-                });
+            try {
+                await signOut(auth);
+                
+                // Limpeza Crítica: O tema volta para a preferência do SO (ou Light Mode)
+                localStorage.clear(); 
+                
+                if (userInfoDiv) {
+                    userInfoDiv.style.display = 'none';
+                }
+                alert('Você saiu da conta.');
+                
+                window.location.replace('login.html');
+            } catch (error) {
+                console.error("FALHA NO LOGOUT:", error);
+                alert('Erro ao sair: ' + error.message);
+            }
         });
-    } else {
-        console.error("ERRO CRÍTICO NO DOM: Botão de logout (id: 'logout-btn') não foi encontrado.");
     }
 });

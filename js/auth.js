@@ -1,11 +1,26 @@
-// Gerenciador de Autenticação e Usuário
-import { auth, onAuthStateChanged, signOut, db } from './firebase.js';
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+    auth, 
+    onAuthStateChanged, 
+    signOut, 
+    db,
+    // Importações do Firestore para manipulação de documentos
+    doc, 
+    getDoc,
+    updateDoc
+} from './firebase.js';
 
 // Estado global do usuário
 let currentUser = null;
 
-// Função para obter dados adicionais do usuário
+// ----------------------------------------------------------------------
+// FUNÇÕES DE MANIPULAÇÃO DO FIRESTORE (DADOS DO PERFIL, PREFERÊNCIAS)
+// ----------------------------------------------------------------------
+
+/**
+ * Busca dados adicionais do usuário no Firestore, incluindo preferências.
+ * @param {string} uid O UID do usuário.
+ * @returns {object|null} Os dados do documento do usuário ou null.
+ */
 export async function getUserData(uid) {
     try {
         const userDoc = await getDoc(doc(db, "usuarios", uid));
@@ -19,18 +34,62 @@ export async function getUserData(uid) {
     }
 }
 
-// Monitora mudanças de autenticação
+/**
+ * Salva ou atualiza dados específicos no documento do usuário logado.
+ * Usa updateDoc, garantindo que apenas os campos fornecidos sejam alterados (merge implícito).
+ * @param {string} uid O UID do usuário atual.
+ * @param {object} data Um objeto contendo os campos a serem atualizados (ex: {'preferencias.dark_mode': true}).
+ * @returns {boolean} Sucesso da operação.
+ */
+export async function saveUserData(uid, data) {
+    if (!uid) {
+        console.error("UID não fornecido. Não é possível salvar dados.");
+        return false;
+    }
+    try {
+        const userRef = doc(db, "usuarios", uid);
+        await updateDoc(userRef, data);
+        console.log("Dados do usuário atualizados com sucesso!");
+
+        // 🎯 ATUALIZAÇÃO DO ESTADO GLOBAL: Mescla os novos dados com o currentUser existente
+        if (currentUser) {
+            // Recarrega o currentUser com dados frescos, ou mescla profundamente
+            // Para simplicidade, vamos assumir que data é o novo objeto de preferência/progresso
+            const freshUserData = await getUserData(uid);
+            currentUser = {
+                 uid: currentUser.uid, 
+                 email: currentUser.email,
+                 ...freshUserData // Sobrescreve dados antigos com os frescos
+            };
+        }
+
+        return true;
+    } catch (err) {
+        console.error('Erro ao salvar dados do usuário:', err);
+        return false;
+    }
+}
+
+// ----------------------------------------------------------------------
+// FUNÇÕES DE AUTENTICAÇÃO E ESTADO GLOBAL
+// ----------------------------------------------------------------------
+
+/**
+ * Monitora mudanças de autenticação e busca dados adicionais do Firestore.
+ * @param {function} callback Função a ser executada com o objeto do usuário atualizado.
+ */
 export function initAuthListener(callback) {
     return onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // Busca dados adicionais do Firestore
+            // Busca DADOS ADICIONAIS do Firestore
             const userData = await getUserData(user.uid);
             currentUser = {
                 uid: user.uid,
                 email: user.email,
                 displayName: user.displayName,
                 photoURL: user.photoURL,
-                ...userData
+                metadata: user.metadata, 
+                ...userData // Espalha todos os campos do Firestore (preferencias, nome, etc.)
             };
         } else {
             currentUser = null;
@@ -42,17 +101,18 @@ export function initAuthListener(callback) {
     });
 }
 
-// Retorna o usuário atual
+/**
+ * Retorna o usuário atual (incluindo dados do Firestore).
+ * 🚨 Nota: Esta função retorna o objeto **cached** (em cache).
+ * Use-a com cautela logo após login/salvamento; o `initAuthListener` garante os dados frescos.
+ */
 export function getCurrentUser() {
     return currentUser;
 }
 
-// Verifica se o usuário está autenticado
-export function isAuthenticated() {
-    return currentUser !== null;
-}
-
-// Faz logout
+/**
+ * Faz logout do usuário.
+ */
 export async function logout() {
     try {
         await signOut(auth);
@@ -64,7 +124,10 @@ export async function logout() {
     }
 }
 
-// Traduz erros de autenticação para português
+// ----------------------------------------------------------------------
+// FUNÇÕES DE VALIDAÇÃO E TRADUÇÃO (MANTIDAS)
+// ----------------------------------------------------------------------
+
 export function traduzErro(err) {
     const code = err.code || '';
     
@@ -81,13 +144,11 @@ export function traduzErro(err) {
     return erros[code] || 'Erro: ' + (err.message || 'tente novamente.');
 }
 
-// Validação de email
 export function validarEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-// Validação de senha
 export function validarSenha(senha) {
     return senha && senha.length >= 6;
 }
