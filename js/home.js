@@ -1,48 +1,65 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('button-name-input');
-    const createBtn = document.getElementById('create-button-btn');
-    const container = document.getElementById('buttons-container');
+import { auth, db, doc, getDoc, onAuthStateChanged } from './firebase.js';
 
-    createBtn.addEventListener('click', () => {
-        let buttonName = input.value.trim();
+// 🚨 NOVO NOME: Renomear para updateHomeProgress e expor globalmente
+// para ser chamada pelo script do Roadmap quando o status muda.
+window.updateHomeProgress = async function(userId) {
+    const progressElement = document.getElementById('medicina-progress-percentage');
+    const progressBar = document.getElementById('medicina-progress-bar');
+    
+    // Usar auth.currentUser se o userId não for passado (quando chamado pelo DOMContentLoaded)
+    const user = auth.currentUser; 
+    const finalUserId = userId || (user ? user.uid : null);
+    
+    // Configura a exibição inicial
+    if (progressElement) progressElement.textContent = '0%'; 
+    if (progressBar) progressBar.style.width = '0%';
 
-        if (buttonName === "") {
-            alert("Por favor, digite um nome para o botão.");
-            return;
+    if (!finalUserId || !progressElement) return;
+
+    try {
+        const userRef = doc(db, "usuarios", finalUserId); 
+        const docSnap = await getDoc(userRef);
+        let percentage = 0;
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Lendo o campo 'medicinaPercentage'
+            percentage = data.progress?.medicinaPercentage ?? 0;
+        } else {
+            console.warn("Documento do usuário não encontrado. Progresso inicializado em 0%.");
         }
-
-        const newButton = document.createElement('button');
         
-        newButton.textContent = buttonName;
+        // Aplica o valor lido (arredondado para garantir que o número seja inteiro no display)
+        const roundedPercentage = Math.round(percentage);
+
+        progressElement.textContent = `${roundedPercentage}%`;
+        if (progressBar) {
+            progressBar.style.width = `${roundedPercentage}%`;
+        }
         
-        newButton.addEventListener('click', () => {
-            alert(`Você clicou no botão: ${buttonName}`);
-        });
-
-        container.appendChild(newButton);
-
-        input.value = '';
-        input.focus(); 
-    });
-});
-
-createBtn.addEventListener('click', () => {
-    let buttonName = input.value.trim();
-    if (buttonName === "") {
-        alert("Por favor, digite um nome para o botão.");
-        return;
+    } catch (error) {
+        console.error("Erro detalhado ao carregar o progresso do Firestore:", error.message); 
+        if (progressElement) progressElement.textContent = 'Erro';
     }
+}
 
-    const newButtonLink = document.createElement('a');
-    const pageFileName = `${buttonName.toLowerCase().replace(/\s/g, '_')}.html`;
-    newButtonLink.href = pageFileName;
 
-    newButtonLink.textContent = buttonName;
+// =================================================================
+// LÓGICA PRINCIPAL (home.js)
+// =================================================================
 
-    newButtonLink.classList.add('created-button-style');
+document.addEventListener('DOMContentLoaded', () => {
+    // ... (restante da lógica de criação de botões, etc.) ...
 
-    container.appendChild(newButtonLink);
-
-    input.value = '';
-    input.focus(); 
+    // 🚨 LÓGICA DE PROGRESSO: Monitora o estado de autenticação
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Usuário logado: Chama a nova função de atualização
+            window.updateHomeProgress(user.uid);
+        } else {
+            console.log("Usuário deslogado. Progresso não carregado.");
+            const progressElement = document.getElementById('medicina-progress-percentage');
+            if (progressElement) progressElement.textContent = '0%';
+        }
+    });
 });

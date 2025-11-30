@@ -1,41 +1,94 @@
+import { auth, db, doc, updateDoc, getDoc } from './firebase.js'; 
+// 🚨 2. Importação dos Dados do Roadmap
+import { roadmapData } from './data.js';
+
+// Calcula dinamicamente o total de tópicos
+const TOTAL_TOPICS_MEDICINA = roadmapData.topics.length; 
+
 // Application state (Global)
 let selectedTopic = null;
+let currentUser = null; // 🔑 Adicionado para armazenar o usuário logado
 
 // =================================================================
 // FUNÇÕES GLOBAIS DE STATUS (Acessíveis fora do DOMContentLoaded)
 // =================================================================
 
 /**
- * Alterna o status de conclusão de um tópico no localStorage e redesenha o roadmap.
- * @param {string} topicId - O ID do tópico.
+ * Busca o mapa de progresso do Firestore ou, em fallback, do localStorage.
+ * @returns {Promise<Object>} Um objeto de mapa de progresso {topicId: boolean}.
  */
-function toggleTopic(topicId) {
-    const saved = JSON.parse(localStorage.getItem("progress")) || {};
-    // Alterna o estado: se está true, vira false; se está undefined/false, vira true
-    saved[topicId] = !saved[topicId]; 
-    localStorage.setItem("progress", JSON.stringify(saved));
-    
-    // Chamadas para funções expostas ao escopo global (window)
-    if (typeof renderRoadmap === 'function') {
-        renderRoadmap(true); // Redesenha para atualizar os ícones
+async function fetchProgressMap() {
+    if (currentUser && db) {
+        try {
+            // Assumindo que o progresso é armazenado na coleção 'progress'
+            const userRef = doc(db, 'progress', currentUser.uid); 
+            const docSnap = await getDoc(userRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Retorna apenas chaves que são true (concluídas)
+                return Object.keys(data).reduce((acc, key) => {
+                    if (data[key]) acc[key] = true;
+                    return acc;
+                }, {});
+            }
+        } catch (error) {
+            console.error("Erro ao carregar progresso do Firestore. Usando LocalStorage.", error);
+        }
     }
-    if (typeof hideTopicDetail === 'function') {
-        hideTopicDetail(); // Fecha o painel para mostrar a mudança
+    // Fallback: LocalStorage
+    try {
+        return JSON.parse(localStorage.getItem("progress")) || {};
+    } catch (e) {
+        return {};
     }
 }
 
+
 /**
- * Atualiza o status de um objeto de tópico baseado no localStorage.
- * @param {object} topicData - O objeto do tópico (roadmapData.topics[i]).
+ * Alterna o status de conclusão de um tópico no Firestore/LocalStorage e redesenha o roadmap.
+ * @param {string} topicId - O ID do tópico.
+ * @returns {Promise<void>}
  */
-function updateTopicStatus(topicData) {
-    const saved = JSON.parse(localStorage.getItem("progress")) || {};
+async function toggleTopic(topicId) { // 🔑 Tornada Assíncrona
+    const currentProgress = await fetchProgressMap(); // Busca o estado atual
+    const newState = !currentProgress[topicId]; 
+    
+    // 1. Atualiza no Firestore (se logado)
+    if (currentUser && db) {
+        try {
+            const userRef = doc(db, 'progress', currentUser.uid);
+            await updateDoc(userRef, { 
+                [topicId]: newState 
+            });
+        } catch (error) {
+            console.error("Erro ao atualizar progresso no Firestore:", error);
+            // Fallback para LocalStorage
+            localStorage.setItem("progress", JSON.stringify({ ...currentProgress, [topicId]: newState }));
+        }
+    } else {
+        // 2. Atualiza no LocalStorage (se deslogado)
+        localStorage.setItem("progress", JSON.stringify({ ...currentProgress, [topicId]: newState }));
+    }
+    
+    // As chamadas para redesenho são tratadas por handleCompleteClick/renderRoadmap
+    // após a conclusão desta função assíncrona.
+}
+
+/**
+ * Atualiza o status de um objeto de tópico baseado no mapa de progresso.
+ * @param {object} topicData - O objeto do tópico (roadmapData.topics[i]).
+ * @param {object} [progressMap=null] - O mapa de progresso buscado por fetchProgressMap.
+ */
+function updateTopicStatus(topicData, progressMap = null) { // 🔑 Recebe progressMap
+    const saved = progressMap || JSON.parse(localStorage.getItem("progress")) || {};
     
     if (saved[topicData.id]) {
-        topicData.status = 'completed';
+        // 1. O status deve ser 'completed' se estiver no mapa de progresso
+        topicData.status = 'completed'; 
     } else if (topicData.isPlaceholder) {
         topicData.status = 'not-started';
     } else {
+        // 2. Se não estiver placeholder E não estiver concluído, é 'in-progress'
         topicData.status = 'in-progress'; 
     }
 }
@@ -85,29 +138,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Funções de Anotações (V1) ---
-
-    function saveNotes() {
-        if (selectedTopic && topicNotes) {
-            const topicId = selectedTopic.id;
-            const notesContent = topicNotes.value;
-            localStorage.setItem(`notes-${topicId}`, notesContent);
+    function updateRoadmapNodeIcon(topicId, status) {
+        const nodeButton = document.querySelector(`.node-button[data-topic-id="${topicId}"]`);
+        
+        if (nodeButton) {
+            const nodeInner = nodeButton.querySelector('.node-inner');
+            
+            if (nodeInner) {
+                const newIconHtml = getStatusIcon(status); 
+                nodeInner.innerHTML = newIconHtml;
+                
+                if (status === 'completed') {
+                    nodeButton.classList.add('completed');
+                } else {
+                    nodeButton.classList.remove('completed');
+                }
+            }
         }
     }
     
-    function loadNotes(topicId) {
-        return localStorage.getItem(`notes-${topicId}`) || '';
-    }
-
+    // --- Funções Auxiliares (Anotações/Vídeo) ---
+    
     function toggleNotesArea() {
         if (!notesArea || !notesBtn) return;
         notesArea.classList.toggle('show');
         notesBtn.classList.toggle('active');
-        
         if (notesArea.classList.contains('show') && topicNotes) {
-            topicNotes.focus(); 
+            topicNotes.focus();
         }
     }
+
+    async function saveNotes() { 
+        if (!selectedTopic || !topicNotes) return;
+
+        const topicId = selectedTopic.id;
+        const notesContent = topicNotes.value;
+
+        if (currentUser && db) {
+            try {
+                // Assumindo coleção 'notes' e doc com uid
+                const notesRef = doc(db, 'notes', currentUser.uid);
+                await updateDoc(notesRef, { 
+                    [topicId]: notesContent
+                });
+            } catch (error) {
+                console.error("Erro ao salvar anotações no Firestore:", error);
+                localStorage.setItem(`notes-${topicId}`, notesContent);
+            }
+        } else {
+            localStorage.setItem(`notes-${topicId}`, notesContent);
+        }
+    }
+
+/** 🔑 ALTERADO: Carrega anotações do Firestore ou LocalStorage. */
+async function loadNotes(topicId) { 
+    if (currentUser && db) { // Usando 'db' globalmente importado
+        try {
+            const docSnap = await getDoc(doc(db, 'notes', currentUser.uid));
+            if (docSnap.exists() && docSnap.data()[topicId]) {
+                return docSnap.data()[topicId];
+            }
+        } catch (error) {
+            console.error("Erro ao carregar anotações do Firestore:", error);
+        }
+    }
+    // Fallback para LocalStorage
+    return localStorage.getItem(`notes-${topicId}`) || '';
+}
 
     // --- Funções de Vídeo (V2) ---
 
@@ -288,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Funções do Painel de Vídeos (Video Panel) - V2
-    // Mantidas, mas geralmente usadas em layouts diferentes (foram removidas do fluxo principal de showTopicDetail/handleNodeClick para simplificar o merge).
     function createVideoPanel(subtopics) {
         if (!videoPanel || !videoPanelContent) return;
         if (!subtopics || subtopics.length === 0) {
@@ -317,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
         videoPanel.classList.remove('show');
         videoPanel.setAttribute('aria-hidden','true');
         videoPanelContent.innerHTML = '';
-        roadmapContainer.style.marginLeft = '0'; // Corrigido para 0, se -10rem era a margem padrão.
+        roadmapContainer.style.marginLeft = '0'; 
     }
     
     // --- Funções Principais de DOM e Interação ---
@@ -370,14 +466,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return nodeDiv;
     }
     
-    // Render roadmap (Expõe ao escopo global para que toggleTopic possa chamá-lo)
-    window.renderRoadmap = function(isUpdate = false) { 
-        // 🚨 PASSO CHAVE: Sincronizar os dados do roadmap (na memória) com o localStorage
+    // 🔑 Atualizado para usar fetchProgressMap e updateTopicStatus (com progressMap)
+    window.syncRoadmapStatus = async function() {
+        const progressMap = await fetchProgressMap(); // Busca progresso do Firebase ou LocalStorage
+
         if (typeof roadmapData !== 'undefined' && roadmapData.topics) {
             roadmapData.topics.forEach(topic => {
-                updateTopicStatus(topic); 
+                updateTopicStatus(topic, progressMap); // Passa o progressMap
             });
         }
+    }
+    
+    // Render roadmap (Expõe ao escopo global para que toggleTopic possa chamá-lo)
+    window.renderRoadmap = async function(isUpdate = false) { 
+        // 1. Sincronizar dados antes de renderizar
+        await window.syncRoadmapStatus();
         
         const isDesktop = window.innerWidth >= 1024;
         const pathDiv = document.createElement('div');
@@ -415,7 +518,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showTopicDetail(topic) {
+    async function saveTotalProgress() {
+    // ⚠️ GARANTIR: 'currentUser', 'db', e 'roadmapData' estão no escopo.
+    if (!currentUser || !db || !roadmapData?.topics) return; 
+
+    // Reutiliza a função que lê o progresso individual (Firebase ou LocalStorage)
+    const progressMap = await fetchProgressMap(); 
+    
+    // Filtra tópicos válidos (não placeholders, pois não contam para o progresso)
+    const validTopics = roadmapData.topics.filter(t => !t.isPlaceholder);
+    const totalValidTopics = validTopics.length;
+
+    let completedCount = 0;
+    validTopics.forEach(topic => {
+        // Verifica se o ID do tópico válido está marcado como true
+        if (progressMap[topic.id] === true) {
+            completedCount++;
+        }
+    });
+
+    // Calcula e arredonda a porcentagem
+    const percentage = totalValidTopics === 0 ? 0 : Math.round((completedCount / totalValidTopics) * 100);
+
+    // Salva a porcentagem no documento do usuário na coleção 'usuarios' (onde a Home lê)
+    try {
+        // 🚨 NOTA: A Home lê de 'usuarios', então salvamos aqui.
+        const userRef = doc(db, 'usuarios', currentUser.uid); 
+        await updateDoc(userRef, { 
+            progress: { 
+                medicinaPercentage: percentage, 
+            }
+        }, { merge: true }); // Merge: true é crucial para não sobrescrever outros campos do usuário.
+        
+        console.log(`Progresso total Medicina (${percentage}%) salvo no perfil do usuário.`);
+    } catch (error) {
+        console.error("Erro ao salvar progresso total no Firestore:", error);
+    }
+    
+    // 🚨 PASSO CRUCIAL: Chama a função global definida no home.js para atualizar a barra da Home
+    if (window.updateHomeProgress) {
+        window.updateHomeProgress(currentUser.uid); // Passa o UID para forçar a leitura correta
+    }
+}
+
+    async function showTopicDetail(topic) {
         selectedTopic = topic;
         
         // 1. Atualizar o estado do nó
@@ -432,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge.className = `status-badge ${topic.status}`;
 
         // 3. Atualizar Anotações
-        const notes = loadNotes(topic.id);
+        const notes = await loadNotes(topic.id); // 🔑 ALTERADO
         if (topicNotes) topicNotes.value = notes;
         if (notesArea) notesArea.classList.remove('show');
         if (notesBtn) notesBtn.classList.remove('active');
@@ -526,11 +672,32 @@ document.addEventListener('DOMContentLoaded', () => {
         closeVideoModal();
     }
 
-    function handleCompleteClick() {
-        if (selectedTopic) {
-            toggleTopic(selectedTopic.id);
+    async function handleCompleteClick() { 
+    if (selectedTopic) {
+        const topicIdToToggle = selectedTopic.id;
+        
+        // 1. Alterna o status individual (Firestore/Local)
+        await toggleTopic(topicIdToToggle); 
+
+        // 🚨 PASSO CRÍTICO: CHAMA A RENDERIZAÇÃO COMPLETA DO MAPA.
+        // Isso garante que o ícone no DOM seja recriado com o status correto.
+        await window.renderRoadmap(true); 
+
+        // 2. Calcula e salva a porcentagem total no perfil
+        await saveTotalProgress(); 
+        
+        // 3. Busca o tópico ATUALIZADO do array global (agora garantido de estar certo)
+        const updatedTopic = roadmapData.topics.find(t => t.id === topicIdToToggle);
+            
+        if (updatedTopic) {
+            // 4. Re-renderiza a sidebar com o status ATUALIZADO (e marca o nó como 'active')
+            await showTopicDetail(updatedTopic); 
+            
+            // 🚨 REMOVA updateRoadmapNodeIcon daqui!
+            // Ele não é mais necessário porque renderRoadmap() já recriou o nó com o ícone correto.
         }
     }
+}
     
     function handleHomeClick() {
         hideTopicDetail();
@@ -538,8 +705,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Inicialização e Event Listeners
+    if (typeof auth !== 'undefined' && auth) { // 🔑 Usa a importação 'auth'
+        auth.onAuthStateChanged(async (user) => {
+            currentUser = user; // 🔑 Atualiza a variável global
+            if (user) {
+                console.log("Usuário logado:", user.uid);
+            } else {
+                console.log("Nenhum usuário logado.");
+            }
+            // Sempre renderiza (recarrega o progresso) quando o estado de auth muda
+            await renderRoadmap(); 
+            // Se a sidebar estava aberta, reabrir para carregar anotações/status corretos
+            if (selectedTopic) {
+                const currentTopic = roadmapData.topics.find(t => t.id === selectedTopic.id);
+                if(currentTopic) await showTopicDetail(currentTopic);
+            }
+        });
+    }
+    
     if (roadmapContainer) {
-        renderRoadmap();
+        // Se a autenticação não estiver definida, renderiza o roadmap com progresso do LocalStorage
+        if (typeof auth === 'undefined' || !auth) {
+            renderRoadmap();
+        }
     } else {
         console.error("Erro: Elemento 'roadmapContainer' não encontrado.");
         return;
@@ -563,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Anexação dos Listeners (VÍDEO)
     if (closeVideoModalBtn) closeVideoModalBtn.addEventListener('click', closeVideoModal);
-    if (closeVideoPanelBtn) closeVideoPanelBtn.addEventListener('click', hideVideoPanel); // Mantido
+    if (closeVideoPanelBtn) closeVideoPanelBtn.addEventListener('click', hideVideoPanel); 
 
     // Event listeners de Resize
     let resizeTimer;
