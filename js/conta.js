@@ -1,110 +1,70 @@
-// ----------------------------------------------------
-// 🎯 IMPORTS
-// ----------------------------------------------------
-import { auth, signOut } from './firebase.js';
-import { initAuthListener } from './auth.js'; 
+// Importações Firebase
+import { 
+    auth, 
+    db, 
+    onAuthStateChanged, 
+    signOut, 
+    doc, 
+    getDoc 
+} from "./firebase.js";
 
+// ----------- Função para formatar datas ----------------
+function formatarData(dataISO) {
+    const data = new Date(dataISO);
+    return data.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+}
 
-// ----------------------------------------------------
-// 🎯 PREVENIR BFCache (back-forward cache)
-// ----------------------------------------------------
-window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-        window.location.reload();
+// ----------- Listener de autenticação -------------------
+onAuthStateChanged(auth, async (user) => {
+    const userInfoBox = document.getElementById("user-info");
+    const boasVindas = document.getElementById("boas-vindas");
+    const userEmail = document.getElementById("user-email");
+    const userDob = document.getElementById("user-dob");
+    const userCreated = document.getElementById("user-created");
+
+    if (!user) {
+        window.location.href = "login.html";
+        return;
     }
-});
 
-// 👉 REMOVIDO: o beforeunload com signOut (Firefox ignora async aqui)
+    try {
+        const userRef = doc(db, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
 
-
-// ----------------------------------------------------
-// 🚀 INICIALIZAÇÃO E LÓGICA PRINCIPAL
-// ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
-
-    const userInfoDiv = document.getElementById('user-info');
-    const boasVindas = document.getElementById('boas-vindas');
-    const userEmail = document.getElementById('user-email');
-    const userDob = document.getElementById('user-dob');
-    const userCreated = document.getElementById('user-created');
-    const logoutBtn = document.getElementById('logout-btn');
-
-
-    // ----------------------------------------------------
-    // 🔐 LISTENER GLOBAL DE AUTENTICAÇÃO
-    // ----------------------------------------------------
-    initAuthListener((user) => {
-        if (!user) {
-            console.log("Usuário deslogado. Redirecionando para login.");
-            if (userInfoDiv) userInfoDiv.style.display = 'none';
-            window.location.replace('login.html');
+        if (!userSnap.exists()) {
+            console.error("Usuário não encontrado no banco.");
             return;
         }
 
-        // Preenche dados do perfil
-        if (boasVindas && userEmail) {
-            const nomeParaExibir = user.nome || user.displayName || user.email;
-            boasVindas.textContent = `Bem-vindo(a), ${nomeParaExibir}`;
-            userEmail.textContent = `Email: ${user.email}`;
-        }
+        const userData = userSnap.data();
 
-        if (userDob) {
-            userDob.textContent = user.nascimento 
-                ? `Data de Nascimento: ${user.nascimento}`
-                : 'Data de Nascimento: Não informada';
-        }
+        // Preencher perfil
+        boasVindas.textContent = "Olá, " + userData.nome + "!";
+        userEmail.textContent = "Email: " + user.email;
 
-        if (userCreated) {
-            let dataMembro;
+        userDob.textContent =
+            "Nascimento: " + formatarData(userData.nascimento);
 
-            if (user.criadoEm) dataMembro = new Date(user.criadoEm);
-            else if (user.metadata?.creationTime) dataMembro = new Date(user.metadata.creationTime);
+        userCreated.textContent =
+            "Conta criada em: " + formatarData(userData.criadoEm);
 
-            if (dataMembro) {
-                userCreated.textContent = `Membro desde: ${dataMembro.toLocaleDateString('pt-BR')}`;
-            } else {
-                userCreated.textContent = 'Membro desde: Informação indisponível';
-            }
-        }
+        userInfoBox.style.display = "block";
 
-        if (userInfoDiv) userInfoDiv.style.display = 'block';
-    });
+    } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error);
+    }
+});
 
-
-    // ----------------------------------------------------
-    // 🔓 BOTÃO DE LOGOUT (CORRIGIDO PARA FIREFOX)
-    // ----------------------------------------------------
-    if (logoutBtn) {
-
-        logoutBtn.addEventListener('click', async () => {
-
-            if (!confirm('Tem certeza que deseja sair da conta?')) return;
-
-            try {
-                // Logout seguro no Firebase
-                await signOut(auth);
-
-                // Limpa tudo
-                localStorage.clear();
-                if (userInfoDiv) userInfoDiv.style.display = 'none';
-
-                // 🔥 ALERTA FUNCIONANDO EM TODOS OS NAVEGADORES
-                alert('Você saiu da conta.');
-
-                // ----------------------------------------------------
-                // ✔ REDIRECIONAMENTO 100% COMPATÍVEL COM FIREFOX
-                // (Firefox só deixa redirecionar após uma nova task queue)
-                // ----------------------------------------------------
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        window.location.replace('index.html');
-                    });
-                });
-
-            } catch (error) {
-                console.error("FALHA NO LOGOUT:", error);
-                alert('Erro ao sair: ' + error.message);
-            }
-        });
+// ------------ Logout -----------------
+document.getElementById("logout-btn").addEventListener("click", async () => {
+    try {
+        await signOut(auth);
+        window.location.href = "login.html";
+    } catch (error) {
+        console.error("Erro ao sair:", error);
     }
 });

@@ -2,10 +2,11 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="author" content="Svy">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="author" content="Svy" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jornada Vet</title>
+
   <script>
     (function () {
       let savedTheme = localStorage.getItem('themePreference');
@@ -16,23 +17,25 @@
       } else if (savedTheme === 'light') {
         isDarkMode = false;
       } else {
-        isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        isDarkMode =
+          window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
       }
 
       if (isDarkMode) {
-        // Adiciona a classe dark-mode na tag <html> ou <body> ANTES do CSS
         document.documentElement.classList.add('dark-mode');
       }
     })();
   </script>
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/conta.css">
+
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/conta.css" />
 </head>
 
 <body>
   <header>
     <nav aria-label="primary-navigation">
-      <input type="checkbox" id="dark-mode-toggle">
+      <input type="checkbox" id="dark-mode-toggle" />
       <label for="dark-mode-toggle" class="switch-label"></label>
       <a href="index.html">
         <button id="homeBtn" class="home-btn" aria-label="Início">
@@ -46,41 +49,42 @@
       </a>
     </nav>
   </header>
-  <hr>
-  <div class="login-container">
+
+  <hr />
+
+  <div class="login-container" id="cadastro-section">
     <h1>Cadastre-se</h1>
 
-    <!-- Botão Google -->
-        <button type="button" id="google-btn" class="google-btn">
-            <img src="images/google.png" alt="Logo da Google">Continue com a conta Google
-        </button>
+    <button type="button" id="google-btn" class="google-btn">
+      <img src="images/google.png" alt="Logo da Google" />Continue com a conta Google
+    </button>
 
     <p class="separator">OU</p>
-    <form id="registerForm">
 
+    <form id="registerForm">
       <div class="input-group">
         <label for="name">Nome Completo</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" required />
       </div>
 
       <div class="input-group">
         <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" required>
+        <input type="email" id="email" required />
       </div>
 
       <div class="input-group">
         <label for="password">Senha</label>
-        <input type="password" id="password" name="password" required>
+        <input type="password" id="password" required />
       </div>
 
       <div class="input-group">
         <label for="confirmPassword">Confirme a Senha</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" required>
+        <input type="password" id="confirmPassword" required />
       </div>
 
       <div class="input-group">
         <label for="dob">Data de Nascimento</label>
-        <input type="date" id="dob" name="dob" required>
+        <input type="date" id="dob" required />
       </div>
 
       <button type="submit">Registrar</button>
@@ -88,128 +92,198 @@
     </form>
   </div>
 
+  <!-- Tela de verificação (fica na mesma página) -->
+  <div class="login-container" id="verificacao-section" style="display:none;">
+    <h1>Verifique seu Email</h1>
+
+    <p>Enviamos um email de verificação para:</p>
+    <p id="email-user" style="font-weight: bold;"></p>
+
+    <button id="reenviar-btn">Reenviar email de verificação</button>
+    <p id="status-msg" class="success-message"></p>
+
+    <button id="btn-voltar-login">Voltar ao Login</button>
+  </div>
+
   <script type="module">
     import {
-        auth,
-        db,
-        createUserWithEmailAndPassword,
-        doc,
-        setDoc,
-        // 🔑 NOVO: Importar GoogleAuthProvider e signInWithPopup
-        GoogleAuthProvider,
-        signInWithPopup 
+      auth,
+      db,
+      createUserWithEmailAndPassword,
+      doc,
+      setDoc,
+      sendEmailVerification,
+      GoogleAuthProvider,
+      signInWithPopup
     } from './js/firebase.js';
 
     import { validarEmail, validarSenha, traduzErro } from './js/auth.js';
 
     const form = document.getElementById('registerForm');
     const message = document.getElementById('message');
-    // 🔑 NOVO: Capturar o botão do Google
-    const googleBtn = document.getElementById('google-btn'); 
+    const googleBtn = document.getElementById('google-btn');
 
-    // ===============================================
-    // 1. REGISTRO COM EMAIL/SENHA (Sua lógica original)
-    // ===============================================
+    const cadastroSection = document.getElementById('cadastro-section');
+    const verificacaoSection = document.getElementById('verificacao-section');
+    const emailUser = document.getElementById('email-user');
+    const reenviarBtn = document.getElementById('reenviar-btn');
+    const statusMsg = document.getElementById('status-msg');
+    const btnVoltar = document.getElementById('btn-voltar-login');
+
+    let currentUserTemp = null;
+    let resendCooldown = false;
+
+    // Voltar ao login
+    btnVoltar.addEventListener('click', () => {
+      window.location.href = 'login.html';
+    });
+
+    // REGISTRO COM EMAIL/SENHA
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      e.preventDefault();
 
-        const nome = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const senha = document.getElementById('password').value;
-        const confirmSenha = document.getElementById('confirmPassword').value;
-        const nascimento = document.getElementById('dob').value;
+      const nome = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('password').value;
+      const confirmSenha = document.getElementById('confirmPassword').value;
+      const nascimento = document.getElementById('dob').value;
 
-        // Validações (Deixadas como estavam)
-        if (!nome) {
-            message.textContent = "Por favor, insira seu nome completo.";
-            message.style.color = '#e74c3c';
-            return;
-        }
+      // Validações
+      if (!nome) {
+        message.textContent = 'Por favor insira seu nome completo.';
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-        if (!validarEmail(email)) {
-            message.textContent = "Por favor, insira um email válido.";
-            message.style.color = '#e74c3c';
-            return;
-        }
+      if (!validarEmail(email)) {
+        message.textContent = 'Email inválido.';
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-        if (!validarSenha(senha)) {
-            message.textContent = "A senha deve ter no mínimo 6 caracteres.";
-            message.style.color = '#e74c3c';
-            return;
-        }
+      if (!validarSenha(senha)) {
+        message.textContent = 'A senha deve ter ao menos 6 caracteres.';
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-        if (senha !== confirmSenha) {
-            message.textContent = "As senhas não coincidem.";
-            message.style.color = '#e74c3c';
-            return;
-        }
+      if (senha !== confirmSenha) {
+        message.textContent = 'As senhas não coincidem.';
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-        if (!nascimento) {
-            message.textContent = "Por favor, selecione sua data de nascimento.";
-            message.style.color = '#e74c3c';
-            return;
-        }
+      if (!nascimento) {
+        message.textContent = 'Por favor selecione sua data de nascimento.';
+        message.style.color = '#e74c3c';
+        return;
+      }
 
-        try {
-            message.textContent = "Registrando...";
-            message.style.color = '#3498db';
+      try {
+        message.textContent = 'Registrando...';
+        message.style.color = '#3498db';
 
-            const cred = await createUserWithEmailAndPassword(auth, email, senha);
-            const uid = cred.user.uid;
+        const cred = await createUserWithEmailAndPassword(auth, email, senha);
+        const user = cred.user;
+        currentUserTemp = user;
 
-            // Salva dados adicionais no Firestore
-            await setDoc(doc(db, "usuarios", uid), {
-                nome: nome,
-                email: email,
-                nascimento: nascimento,
-                criadoEm: new Date().toISOString()
-            });
+        // envia email de verificação
+        await sendEmailVerification(user);
 
-            message.textContent = 'Cadastro realizado com sucesso!';
-            message.style.color = '#27ae60';
+        // salva dados no Firestore
+        await setDoc(doc(db, 'usuarios', user.uid), {
+          nome: nome,
+          email: email,
+          nascimento: nascimento,
+          criadoEm: new Date().toISOString()
+        });
 
-            setTimeout(() => {
-                window.location.href = 'perfil.html';
-            }, 1500);
-        } catch (err) {
-            message.textContent = traduzErro(err);
-            message.style.color = '#e74c3c';
-            console.error('Erro ao registrar:', err);
-        }
+        // troca a tela
+        cadastroSection.style.display = 'none';
+        verificacaoSection.style.display = 'block';
+        emailUser.textContent = email;
+        message.textContent = '';
+        statusMsg.textContent = 'Enviado! Verifique sua caixa de entrada.';
+        statusMsg.style.color = '#27ae60';
+
+      } catch (err) {
+        message.textContent = traduzErro(err);
+        message.style.color = '#e74c3c';
+        console.error('Erro ao registrar:', err);
+      }
     });
 
-    // ===============================================
-    // 2. LOGIN COM GOOGLE (Fora do bloco de submit)
-    // ===============================================
+    // REENVIAR EMAIL DE VERIFICAÇÃO (com cooldown visual simples)
+    reenviarBtn.addEventListener('click', async () => {
+      if (resendCooldown) return;
+      if (!currentUserTemp) {
+        statusMsg.textContent = 'Erro: usuário não encontrado.';
+        statusMsg.style.color = '#e74c3c';
+        return;
+      }
+
+      try {
+        resendCooldown = true;
+        reenviarBtn.disabled = true;
+        reenviarBtn.textContent = 'Enviando...';
+
+        await sendEmailVerification(currentUserTemp);
+
+        statusMsg.textContent = 'Email reenviado com sucesso!';
+        statusMsg.style.color = '#27ae60';
+
+        // cooldown 30s para evitar abuso
+        setTimeout(() => {
+          resendCooldown = false;
+          reenviarBtn.disabled = false;
+          reenviarBtn.textContent = 'Reenviar email de verificação';
+        }, 30000);
+
+      } catch (err) {
+        statusMsg.textContent = 'Erro ao reenviar: ' + (err.message || err);
+        statusMsg.style.color = '#e74c3c';
+        console.error('Erro ao reenviar email:', err);
+        resendCooldown = false;
+        reenviarBtn.disabled = false;
+        reenviarBtn.textContent = 'Reenviar email de verificação';
+      }
+    });
+
+    // LOGIN COM GOOGLE
     googleBtn.addEventListener('click', async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            message.textContent = "Conectando com Google...";
-            message.style.color = '#3498db';
+      const provider = new GoogleAuthProvider();
+      try {
+        message.textContent = 'Conectando com Google...';
+        message.style.color = '#3498db';
 
-            // 🔑 signInWithPopup trata o registro e login automaticamente
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
 
-            await setDoc(doc(db, "usuarios", user.uid), {
-                nome: user.displayName || user.email.split('@')[0],
-                email: user.email,
-                criadoEm: new Date().toISOString() 
-            }, { merge: true }); // Usar merge: true é mais seguro
+        // salva/merge no Firestore
+        await setDoc(
+          doc(db, 'usuarios', user.uid),
+          {
+            nome: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            criadoEm: new Date().toISOString()
+          },
+          { merge: true }
+        );
 
-            message.textContent = 'Registro/Login com Google realizado!';
-            message.style.color = '#27ae60';
-            
-            setTimeout(() => {
-                window.location.href = 'perfil.html';
-            }, 1500);
-        } catch (err) {
-            message.textContent = traduzErro(err) || 'Erro no login com Google.';
-            message.style.color = '#e74c3c';
-            console.error('Erro ao entrar com Google:', err);
-        }
+        message.textContent = 'Login com Google realizado!';
+        message.style.color = '#27ae60';
+
+        setTimeout(() => {
+          window.location.href = 'perfil.html';
+        }, 1200);
+      } catch (err) {
+        message.textContent = traduzErro(err) || 'Erro ao entrar com Google.';
+        message.style.color = '#e74c3c';
+        console.error('Erro login Google:', err);
+      }
     });
-</script>
+  </script>
+
   <script type="module" src="js/theme.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>

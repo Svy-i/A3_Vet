@@ -1,3 +1,4 @@
+// js/firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
@@ -8,13 +9,14 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   setPersistence,
+  sendEmailVerification,
   browserLocalPersistence,
   browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-import { 
-  getFirestore, 
-  doc, 
+import {
+  getFirestore,
+  doc,
   setDoc,
   getDoc,
   updateDoc,
@@ -25,6 +27,9 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/**
+ * CONFIG - substitua pelos seus dados se necessário
+ */
 const firebaseConfig = {
   apiKey: "AIzaSyAXeDMCE1ZQCYrBcctS3T1gWO5TriJ9Zpo",
   authDomain: "jornada-vet.firebaseapp.com",
@@ -35,33 +40,13 @@ const firebaseConfig = {
   measurementId: "G-61T07G38TX"
 };
 
+// Inicializa app, auth e firestore
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export {
-  auth,
-  db,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  getDocs
-};
-
 // -----------------------------------------------------------
-// 🔥 CORREÇÃO DEFINITIVA PARA O FIREFOX
-// Detecta Firefox e usa sessionPersistence em vez de IndexedDB
+// Correção para Firefox: usar session persistence no Firefox
 // -----------------------------------------------------------
 const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
 
@@ -75,3 +60,27 @@ setPersistence(auth, isFirefox ? browserSessionPersistence : browserLocalPersist
   .catch((error) => {
     console.error("Erro ao definir persistência:", error);
   });
+
+// Exports
+export {
+  auth,
+  db,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
+  setPersistence,
+  sendEmailVerification,
+  // Firestore helpers
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs
+};

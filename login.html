@@ -75,74 +75,67 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module">
-        import { auth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from './js/firebase.js'; // 🔑 Importar onAuthStateChanged
-        import { traduzErro } from './js/auth.js';
+<script type="module" src="js/theme.js"></script>
 
-        const form = document.getElementById('loginForm');
-        const message = document.getElementById('message');
+<script type="module">
+    import { auth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from './js/firebase.js';
+    import { traduzErro } from './js/auth.js';
 
-        // ==========================================================
-        // 🔑 NOVO: VERIFICAÇÃO DE ESTADO DE AUTENTICAÇÃO AO CARREGAR
-        // ==========================================================
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Se o usuário estiver logado, redireciona para a home
-                console.log("Usuário já logado. Redirecionando.");
-                window.location.replace('index.html');
-            } else {
-                // Se deslogado, garante que a mensagem de erro (ou sucesso anterior) está limpa.
-                message.textContent = ''; 
-            }
-        });
+    const form = document.getElementById('loginForm');
+    const message = document.getElementById('message');
 
-        // Login com email/senha
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const senha = document.getElementById('password').value;
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.replace('index.html');
+        } else {
+            message.textContent = ''; 
+        }
+    });
 
-            try {
-                message.textContent = "Entrando...";
-                message.style.color = '#3498db';
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const senha = document.getElementById('password').value;
 
-                await signInWithEmailAndPassword(auth, email, senha);
-                
-                message.textContent = 'Login realizado com sucesso!';
-                message.style.color = '#27ae60';
-                
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-            } catch (err) {
-                message.textContent = traduzErro(err);
-                message.style.color = '#e74c3c';
-                console.error('Erro ao entrar:', err);
-            }
-        });
+        try {
+            message.textContent = "Entrando...";
+            message.style.color = '#3498db';
 
-        // Login com Google
-        document.getElementById('google-btn').addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                message.textContent = "Conectando com Google...";
-                message.style.color = '#3498db';
+            await signInWithEmailAndPassword(auth, email, senha);
+            
+            message.textContent = 'Login realizado com sucesso!';
+            message.style.color = '#27ae60';
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        } catch (err) {
+            message.textContent = traduzErro(err);
+            message.style.color = '#e74c3c';
+        }
+    });
 
-                const result = await signInWithPopup(auth, provider);
-                
-                message.textContent = 'Login com Google realizado!';
-                message.style.color = '#27ae60';
-                
-                setTimeout(() => {
-                    window.location.href = 'perfil.html';
-                }, 1500);
-            } catch (err) {
-                message.textContent = 'Erro no login com Google: ' + err.message;
-                message.style.color = '#e74c3c';
-                console.error('Erro ao entrar com Google:', err);
-            }
-        });
-    </script>
-    <script src="js/theme.js"></script>
+    document.getElementById('google-btn').addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            message.textContent = "Conectando com Google...";
+            message.style.color = '#3498db';
+
+            await signInWithPopup(auth, provider);
+
+            message.textContent = 'Login com Google realizado!';
+            message.style.color = '#27ae60';
+
+            setTimeout(() => {
+                window.location.href = 'perfil.html';
+            }, 1500);
+        } catch (err) {
+            message.textContent = 'Erro no login com Google: ' + err.message;
+            message.style.color = '#e74c3c';
+        }
+    });
+</script>
+
+    <script type="module" src="js/theme.js"></script>
 </body>
 </html>

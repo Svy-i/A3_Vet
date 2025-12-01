@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
@@ -8,39 +9,40 @@
     <meta name="author" content="Svy">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jornada Vet - Perfil</title>
+
+    <!-- Anti-flash correto -->
     <script>
-        (function() {
-            let savedTheme = localStorage.getItem('themePreference'); 
+        (function () {
+            let savedTheme = localStorage.getItem('themePreference');
             let isDarkMode = false;
-            
+
             if (savedTheme === 'dark') {
                 isDarkMode = true;
             } else if (savedTheme === 'light') {
                 isDarkMode = false;
             } else {
-                isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             }
 
             if (isDarkMode) {
-                // Adiciona a classe dark-mode na tag <html> ou <body> ANTES do CSS
                 document.documentElement.classList.add('dark-mode');
             }
         })();
     </script>
+
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/conta.css">
 </head>
+
 <body>
     <header>
         <nav aria-label="primary-navigation">
             <input type="checkbox" id="dark-mode-toggle">
             <label for="dark-mode-toggle" class="switch-label"></label>
             <a href="index.html">
-                <button id="homeBtn" class="home-btn" aria-label="Início">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
-                         viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" 
-                         stroke-linecap="round" stroke-linejoin="round">
+                <button id="homeBtn" class="home-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
@@ -53,17 +55,22 @@
 
     <div class="login-container">
         <h1>Perfil do Usuário</h1>
-                <div id="user-info" style="display: none;">
-            <p id="boas-vindas"></p>             <p id="user-email"></p>
+
+        <div id="user-info" style="display:none;">
+            <p id="boas-vindas"></p>
+            <p id="user-email"></p>
             <p id="user-dob"></p>
             <p id="user-created"></p>
         </div>
+
         <button id="logout-btn">Sair</button>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/conta.js"></script>
+    <!-- Scripts (ordem correta!) -->
     <script type="module" src="js/theme.js"></script>
+    <script type="module" src="js/conta.js"></script>
     <script type="module" src="js/main.js"></script>
+
 </body>
+
 </html>
