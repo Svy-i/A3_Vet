@@ -50,9 +50,10 @@
   <div class="login-container">
     <h1>Cadastre-se</h1>
 
-    <button type="button" class="google-btn">
-      <img src="images/google.png" alt="Logo da Google">Continue com a conta Google
-    </button>
+    <!-- Botão Google -->
+        <button type="button" id="google-btn" class="google-btn">
+            <img src="images/google.png" alt="Logo da Google">Continue com a conta Google
+        </button>
 
     <p class="separator">OU</p>
     <form id="registerForm">
@@ -89,86 +90,126 @@
 
   <script type="module">
     import {
-      auth,
-      db,
-      createUserWithEmailAndPassword,
-      doc,
-      setDoc
+        auth,
+        db,
+        createUserWithEmailAndPassword,
+        doc,
+        setDoc,
+        // 🔑 NOVO: Importar GoogleAuthProvider e signInWithPopup
+        GoogleAuthProvider,
+        signInWithPopup 
     } from './js/firebase.js';
 
     import { validarEmail, validarSenha, traduzErro } from './js/auth.js';
 
     const form = document.getElementById('registerForm');
     const message = document.getElementById('message');
+    // 🔑 NOVO: Capturar o botão do Google
+    const googleBtn = document.getElementById('google-btn'); 
 
+    // ===============================================
+    // 1. REGISTRO COM EMAIL/SENHA (Sua lógica original)
+    // ===============================================
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+        e.preventDefault();
 
-      const nome = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('password').value;
-      const confirmSenha = document.getElementById('confirmPassword').value;
-      const nascimento = document.getElementById('dob').value;
+        const nome = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const senha = document.getElementById('password').value;
+        const confirmSenha = document.getElementById('confirmPassword').value;
+        const nascimento = document.getElementById('dob').value;
 
-      // Validações
-      if (!nome) {
-        message.textContent = "Por favor, insira seu nome completo.";
-        message.style.color = '#e74c3c';
-        return;
-      }
+        // Validações (Deixadas como estavam)
+        if (!nome) {
+            message.textContent = "Por favor, insira seu nome completo.";
+            message.style.color = '#e74c3c';
+            return;
+        }
 
-      if (!validarEmail(email)) {
-        message.textContent = "Por favor, insira um email válido.";
-        message.style.color = '#e74c3c';
-        return;
-      }
+        if (!validarEmail(email)) {
+            message.textContent = "Por favor, insira um email válido.";
+            message.style.color = '#e74c3c';
+            return;
+        }
 
-      if (!validarSenha(senha)) {
-        message.textContent = "A senha deve ter no mínimo 6 caracteres.";
-        message.style.color = '#e74c3c';
-        return;
-      }
+        if (!validarSenha(senha)) {
+            message.textContent = "A senha deve ter no mínimo 6 caracteres.";
+            message.style.color = '#e74c3c';
+            return;
+        }
 
-      if (senha !== confirmSenha) {
-        message.textContent = "As senhas não coincidem.";
-        message.style.color = '#e74c3c';
-        return;
-      }
+        if (senha !== confirmSenha) {
+            message.textContent = "As senhas não coincidem.";
+            message.style.color = '#e74c3c';
+            return;
+        }
 
-      if (!nascimento) {
-        message.textContent = "Por favor, selecione sua data de nascimento.";
-        message.style.color = '#e74c3c';
-        return;
-      }
+        if (!nascimento) {
+            message.textContent = "Por favor, selecione sua data de nascimento.";
+            message.style.color = '#e74c3c';
+            return;
+        }
 
-      try {
-        message.textContent = "Registrando...";
-        message.style.color = '#3498db';
+        try {
+            message.textContent = "Registrando...";
+            message.style.color = '#3498db';
 
-        const cred = await createUserWithEmailAndPassword(auth, email, senha);
-        const uid = cred.user.uid;
+            const cred = await createUserWithEmailAndPassword(auth, email, senha);
+            const uid = cred.user.uid;
 
-        // Salva dados adicionais no Firestore
-        await setDoc(doc(db, "usuarios", uid), {
-          nome: nome,
-          email: email,
-          nascimento: nascimento,
-          criadoEm: new Date().toISOString()
-        });
+            // Salva dados adicionais no Firestore
+            await setDoc(doc(db, "usuarios", uid), {
+                nome: nome,
+                email: email,
+                nascimento: nascimento,
+                criadoEm: new Date().toISOString()
+            });
 
-        message.textContent = 'Cadastro realizado com sucesso!';
-        message.style.color = '#27ae60';
+            message.textContent = 'Cadastro realizado com sucesso!';
+            message.style.color = '#27ae60';
 
-        setTimeout(() => {
-          window.location.href = 'perfil.html';
-        }, 1500);
-      } catch (err) {
-        message.textContent = traduzErro(err);
-        message.style.color = '#e74c3c';
-        console.error('Erro ao registrar:', err);
-      }
+            setTimeout(() => {
+                window.location.href = 'perfil.html';
+            }, 1500);
+        } catch (err) {
+            message.textContent = traduzErro(err);
+            message.style.color = '#e74c3c';
+            console.error('Erro ao registrar:', err);
+        }
     });
-  </script>
+
+    // ===============================================
+    // 2. LOGIN COM GOOGLE (Fora do bloco de submit)
+    // ===============================================
+    googleBtn.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            message.textContent = "Conectando com Google...";
+            message.style.color = '#3498db';
+
+            // 🔑 signInWithPopup trata o registro e login automaticamente
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            await setDoc(doc(db, "usuarios", user.uid), {
+                nome: user.displayName || user.email.split('@')[0],
+                email: user.email,
+                criadoEm: new Date().toISOString() 
+            }, { merge: true }); // Usar merge: true é mais seguro
+
+            message.textContent = 'Registro/Login com Google realizado!';
+            message.style.color = '#27ae60';
+            
+            setTimeout(() => {
+                window.location.href = 'perfil.html';
+            }, 1500);
+        } catch (err) {
+            message.textContent = traduzErro(err) || 'Erro no login com Google.';
+            message.style.color = '#e74c3c';
+            console.error('Erro ao entrar com Google:', err);
+        }
+    });
+</script>
   <script type="module" src="js/theme.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>

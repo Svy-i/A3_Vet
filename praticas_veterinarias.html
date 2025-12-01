@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap – Práticas Veterinárias</title>
+
+    <script>
+        (function() {
+            let savedTheme = localStorage.getItem('themePreference');
+            let isDark = savedTheme === 'dark' 
+                || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            if (isDark) document.documentElement.classList.add('dark-mode');
+        })();
+    </script>
+
+    <link rel="icon" href="images/animal-welfare.png" type="image/x-icon">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/roadmap.css">
+</head>
+
+<body>
+    <header class="roadmap-header">
+        <div class="header-content">
+            <input type="checkbox" id="dark-mode-toggle" />
+            <label for="dark-mode-toggle" class="switch-label"></label>
+
+            <div>
+                <h1>Módulo Práticas Veterinárias</h1>
+                <div class="gradient-underline"></div>
+            </div>
+
+            <a href="index.html">
+                <button id="homeBtn" class="home-btn" aria-label="Início">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Início</span>
+                </button>
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="intro-section">
+                <p class="intro-text">
+                    Este roadmap apresenta o caminho de aprendizado para o módulo de Práticas Veterinárias.
+                </p>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-circle status-in-progress"></div>
+                        <span>Em progresso</span>
+                    </div>
+
+                    <div class="legend-item">
+                        <div class="legend-circle status-completed"></div>
+                        <span>Concluído</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- container usado pelo roadmap.js -->
+            <div id="roadmapContainer" class="roadmap-container"></div>
+        </div>
+    </main>
+
+    <!-- Painel lateral de tópicos -->
+    <div id="overlay" class="overlay"></div>
+
+    <aside id="topicDetail" class="topic-detail">
+        <div class="detail-header">
+
+            <div class="detail-header-content">
+                <h2 id="detailTitle"></h2>
+
+                <div class="status-and-actions">
+                    <span id="detailStatus" class="status-badge"></span>
+
+                    <button id="notesBtn" class="notes-action-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                        </svg>
+                        <span>Anotações</span>
+                    </button>
+                </div>
+            </div>
+
+            <button id="closeDetail" class="close-btn" aria-label="Fechar">×</button>
+        </div>
+
+        <div id="notesArea" class="notes-area">
+            <textarea id="topicNotes"
+                placeholder="Escreva suas anotações aqui..."></textarea>
+        </div>
+
+        <div class="detail-content">
+            <div id="detailDescription"></div>
+            <div id="detailSubtopics"></div>
+            <div id="detailResources"></div>
+
+            <div id="detailActions" class="detail-actions">
+                <button class="btn btn-outline" id="completeBtn">Marcar como concluído</button>
+            </div>
+
+            <div id="detailPlaceholder" class="placeholder-message" style="display:none;">
+                Este tópico ainda está em desenvolvimento.
+            </div>
+        </div>
+    </aside>
+
+    <!-- Modal de vídeo -->
+    <div id="videoModal" class="video-modal">
+        <div class="video-modal-content">
+            <button id="closeVideoModal" class="close-video-btn" aria-label="Fechar vídeo">×</button>
+            <h3 id="videoModalTitle"></h3>
+
+            <div class="video-frame-wrap">
+                <iframe id="videoModalIframe" allowfullscreen></iframe>
+                <video id="videoModalPlayer" controls style="display:none;"></video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ordem correta dos módulos -->
+    <script type="module" src="js/theme.js"></script>
+    <script type="module" src="js/data-praticas.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/roadmap.js"></script>
+</body>
+</html>

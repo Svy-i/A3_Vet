@@ -407,6 +407,7 @@ async function loadNotes(topicId) {
         const disableSubtopicsDisplay = topic.id === 'teste-final';
         const lineWidth = isLast ? 0 : (hasSubtopics ? 280 : 200);
 
+        // 🟢 1. Classe de conclusão para o botão e para o nó de sub-tópicos
         const completionClass = topic.status === 'completed' ? ' completed' : '';
 
         nodeDiv.innerHTML = `
@@ -431,7 +432,8 @@ async function loadNotes(topicId) {
                 ` : ''}
             </div>
             
-            ${(hasSubtopics && !disableSubtopicsDisplay) ? ` <div class="node-subtopics">
+            ${(hasSubtopics && !disableSubtopicsDisplay) ? ` 
+                <div class="node-subtopics${completionClass}"> 
                     <div class="subtopics-card">
                         <ul class="subtopics-list">
                             ${topic.subtopics.map(subtopic => `
