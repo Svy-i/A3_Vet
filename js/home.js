@@ -1,65 +1,133 @@
-import { auth, db, doc, getDoc, onAuthStateChanged } from './firebase.js';
+import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from './firebase.js';
 
-// 🚨 NOVO NOME: Renomear para updateHomeProgress e expor globalmente
-// para ser chamada pelo script do Roadmap quando o status muda.
-window.updateHomeProgress = async function(userId) {
-    const progressElement = document.getElementById('medicina-progress-percentage');
-    const progressBar = document.getElementById('medicina-progress-bar');
-    
-    // Usar auth.currentUser se o userId não for passado (quando chamado pelo DOMContentLoaded)
-    const user = auth.currentUser; 
-    const finalUserId = userId || (user ? user.uid : null);
-    
-    // Configura a exibição inicial
-    if (progressElement) progressElement.textContent = '0%'; 
-    if (progressBar) progressBar.style.width = '0%';
+// Definição de todos os módulos e seus campos correspondentes no Firestore
+const MODULE_CONFIG = [
+    { id: 'medicina', field: 'medicinaPercentage' },
+    { id: 'praticas_veterinarias', field: 'praticas_veterinariasPercentage' },
+    { id: 'sistemas_vitais', field: 'sistemas_vitaisPercentage' },
+    { id: 'reproducao_animal', field: 'reproducao_animalPercentage' },
+    { id: 'biotecnologia', field: 'biotecnologiaPercentage' },
+    { id: 'saude_animal', field: 'saude_animalPercentage' }
+];
 
-    if (!finalUserId || !progressElement) return;
+// ------------------------------------------------------------------
+// 1. Funções de Atualização da UI
+// ------------------------------------------------------------------
+
+/**
+ * Atualiza a barra de progresso e o texto para um módulo específico.
+ * @param {string} moduleId - O ID do módulo (ex: 'medicina').
+ * @param {number} percentage - A porcentagem de progresso.
+ */
+function updateModuleUI(moduleId, percentage) {
+    const roundedPercentage = Math.round(percentage);
+    const progressElement = document.getElementById(`${moduleId}-progress-percentage`);
+    const progressBar = document.getElementById(`${moduleId}-progress-bar`);
+
+    if (progressBar) {
+        progressBar.style.width = `${roundedPercentage}%`;
+    }
+    
+    if (progressElement) {
+        progressElement.textContent = `${roundedPercentage}%`;
+    }
+}
+
+/**
+ * Controla a visibilidade dos links de Login/Cadastro e Perfil no cabeçalho.
+ * @param {object | null} user - O objeto de usuário do Firebase ou null.
+ */
+function updateHeaderLinks(user) {
+    const profileLink = document.getElementById('profile-link');
+    const authLinksDiv = document.getElementById('auth-links');
+
+    if (user) {
+        // Usuário Logado
+        if (profileLink) profileLink.style.display = 'flex'; // Mostra Perfil
+        if (authLinksDiv) authLinksDiv.style.display = 'none'; // Esconde Login/Cadastro
+    } else {
+        // Usuário Deslogado
+        if (profileLink) profileLink.style.display = 'none'; // Esconde Perfil
+        if (authLinksDiv) authLinksDiv.style.display = 'flex'; // Mostra Login/Cadastro
+    }
+}
+
+// ------------------------------------------------------------------
+// 2. Função de Carregamento de Progresso
+// ------------------------------------------------------------------
+
+/**
+ * Carrega e atualiza o progresso de todos os módulos.
+ * Exposto globalmente para ser chamado por outros scripts se necessário.
+ * @param {string | null} userId - O UID do usuário atual.
+ */
+window.updateAllModulesProgress = async function(userId) {
+    const finalUserId = userId || (auth.currentUser ? auth.currentUser.uid : null);
+    
+    // Inicializa todas as barras em 0%
+    MODULE_CONFIG.forEach(module => updateModuleUI(module.id, 0));
+
+    if (!finalUserId) {
+        console.log("Usuário deslogado. Progresso não carregado.");
+        return;
+    }
 
     try {
         const userRef = doc(db, "usuarios", finalUserId); 
         const docSnap = await getDoc(userRef);
-        let percentage = 0;
 
         if (docSnap.exists()) {
             const data = docSnap.data();
-            // Lendo o campo 'medicinaPercentage'
-            percentage = data.progress?.medicinaPercentage ?? 0;
+            
+            // Itera sobre todos os módulos e atualiza o progresso
+            MODULE_CONFIG.forEach(module => {
+                // Lê a porcentagem do objeto 'progress' no Firestore
+                const percentage = data.progress?.[module.field] ?? 0;
+                updateModuleUI(module.id, percentage);
+            });
         } else {
-            console.warn("Documento do usuário não encontrado. Progresso inicializado em 0%.");
-        }
-        
-        // Aplica o valor lido (arredondado para garantir que o número seja inteiro no display)
-        const roundedPercentage = Math.round(percentage);
-
-        progressElement.textContent = `${roundedPercentage}%`;
-        if (progressBar) {
-            progressBar.style.width = `${roundedPercentage}%`;
+            console.warn("Documento do usuário não encontrado.");
         }
         
     } catch (error) {
         console.error("Erro detalhado ao carregar o progresso do Firestore:", error.message); 
-        if (progressElement) progressElement.textContent = 'Erro';
     }
 }
 
-
-// =================================================================
-// LÓGICA PRINCIPAL (home.js)
-// =================================================================
+// ------------------------------------------------------------------
+// 3. Lógica Principal e Listener de Autenticação
+// ------------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (restante da lógica de criação de botões, etc.) ...
+    // 1. 🔑 Inicialização de Segurança: Garante que os links de Login/Cadastro
+    // estão visíveis por padrão, antes que o Firebase resolva o estado.
+    updateHeaderLinks(null); 
 
-    // 🚨 LÓGICA DE PROGRESSO: Monitora o estado de autenticação
-    onAuthStateChanged(auth, (user) => {
+    // 2. 🚨 Listener de Autenticação: Monitora o estado
+    onAuthStateChanged(auth, async (user) => { // Tornamos async para a correção do Firefox
+        // Atualiza o cabeçalho imediatamente com o estado resolvido
+        updateHeaderLinks(user); 
+
         if (user) {
-            // Usuário logado: Chama a nova função de atualização
-            window.updateHomeProgress(user.uid);
+            // Usuário logado: Carrega o progresso
+            window.updateAllModulesProgress(user.uid);
         } else {
-            console.log("Usuário deslogado. Progresso não carregado.");
-            const progressElement = document.getElementById('medicina-progress-percentage');
-            if (progressElement) progressElement.textContent = '0%';
+            // Usuário deslogado:
+            
+            // 🛑 CORREÇÃO FIREFOX/FLASH: Se o auth.currentUser ainda existir (o flash)
+            if (auth.currentUser) {
+                console.warn("Detectado 'flash' de autenticação. Forçando signOut para limpar o token.");
+                try {
+                    await signOut(auth);
+                    // Chamamos updateHeaderLinks(null) novamente para garantir
+                    updateHeaderLinks(null); 
+                } catch (error) {
+                    console.error("Erro ao forçar signOut:", error);
+                }
+            }
+            
+            // Zera o progresso na UI
+            window.updateAllModulesProgress(null); 
         }
     });
 });

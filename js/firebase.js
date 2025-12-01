@@ -7,9 +7,11 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
-  indexedDBLocalPersistence,
-  setPersistence
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 import { 
   getFirestore, 
   doc, 
@@ -32,7 +34,6 @@ const firebaseConfig = {
   appId: "1:574615831632:web:08b084f2310b97f1cf3d55",
   measurementId: "G-61T07G38TX"
 };
-
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -58,9 +59,18 @@ export {
   getDocs
 };
 
-setPersistence(auth, indexedDBLocalPersistence)
+// -----------------------------------------------------------
+// 🔥 CORREÇÃO DEFINITIVA PARA O FIREFOX
+// Detecta Firefox e usa sessionPersistence em vez de IndexedDB
+// -----------------------------------------------------------
+const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
+
+setPersistence(auth, isFirefox ? browserSessionPersistence : browserLocalPersistence)
   .then(() => {
-    console.log("Persistência de autenticação definida para IndexedDB.");
+    console.log(
+      "Persistência configurada para:",
+      isFirefox ? "browserSessionPersistence (Firefox)" : "browserLocalPersistence"
+    );
   })
   .catch((error) => {
     console.error("Erro ao definir persistência:", error);

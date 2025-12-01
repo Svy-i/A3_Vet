@@ -24,8 +24,8 @@ function updateProgressBars() {
     const progressText = document.getElementById("progress-text");
 
     if (fillBar && progressText) {
-        fillBar.style.width = percent + "%";
-        progressText.textContent = Math.round(percent) + "% concluído";
+        fillBar.style.width = `${parseFloat(percent)}%`; 
+        progressText.textContent = `${Math.round(percent)}% concluído`;
     }
     updateCheckboxes();
 }
@@ -51,15 +51,19 @@ function updateCheckboxes() {
 document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Lógica da Home (Carregar progresso do módulo após autenticação)
-    if (document.getElementById("medicina-progress-text")) {
+    // 🔑 CORREÇÃO CRÍTICA: Chama a função global definida em home.js
+    if (document.getElementById("buttons-container")) { // Melhor se basear no container de módulos
         onAuthStateChanged(auth, (user) => {
-            updateHomeProgress();
+            // Verifica se a função global está carregada (se home.js foi carregado)
+            if (typeof window.updateAllModulesProgress === 'function') {
+                window.updateAllModulesProgress(user ? user.uid : null);
+            } else {
+                console.error("Função updateAllModulesProgress não está carregada. Verifique a importação de home.js.");
+            }
         });
     }
 
     // 2. Lógica do Roadmap (Se estiver na página do roadmap, atualiza as barras locais)
-    // NOTE: Se esta página for a home, o check abaixo deve ser removido. 
-    // Se for o roadmap, ele permanece, mas idealmente essas funções estariam em roadmap.js.
     if (document.getElementById("progress-text")) {
         updateProgressBars();
     }

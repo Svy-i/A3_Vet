@@ -37,6 +37,20 @@ body {
     background-color: #f9f9f9;
     color: #333;
     transition: background-color 0.5s, color 0.5s;
+
+    /* 🔑 PASSO 1: Configuração Flexbox para o Sticky Footer */
+    min-height: 100vh; /* Ocupa no mínimo 100% da altura da viewport */
+    display: flex; /* Habilita o Flexbox */
+    flex-direction: column; /* Organiza os filhos (header, main, footer) em coluna */
+}
+
+main {
+    flex-grow: 1; /* Faz com que a seção <main> ocupe todo o espaço vertical restante */
+    /* Você pode querer adicionar um padding horizontal para o conteúdo */
+    padding: 20px; 
+    max-width: 1200px; /* Limite a largura máxima para leitura */
+    width: 100%;
+    margin: 0 auto; /* Centraliza o conteúdo principal */
 }
 
 /* 🚨 NOVO: Altere de body.dark-mode para html.dark-mode (ou :root.dark-mode) */
@@ -57,6 +71,7 @@ html.dark-mode .module-button-style {
 html.dark-mode header, html.dark-mode footer {
     background-color: #1e1e1e;
     color: #f0f0f0;
+    
 }
 
 html.dark-mode .profile-btn {

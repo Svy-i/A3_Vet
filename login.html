@@ -5,6 +5,25 @@
     <meta name="author" content="Svy">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jornada Vet - Login</title>
+    <script>
+    (function () {
+      let savedTheme = localStorage.getItem('themePreference');
+      let isDarkMode = false;
+
+      if (savedTheme === 'dark') {
+        isDarkMode = true;
+      } else if (savedTheme === 'light') {
+        isDarkMode = false;
+      } else {
+        isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      if (isDarkMode) {
+        // Adiciona a classe dark-mode na tag <html> ou <body> ANTES do CSS
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/conta.css">
 </head>
@@ -57,11 +76,25 @@
 
     <!-- Scripts -->
     <script type="module">
-        import { auth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from './js/firebase.js';
+        import { auth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from './js/firebase.js'; // 🔑 Importar onAuthStateChanged
         import { traduzErro } from './js/auth.js';
 
         const form = document.getElementById('loginForm');
         const message = document.getElementById('message');
+
+        // ==========================================================
+        // 🔑 NOVO: VERIFICAÇÃO DE ESTADO DE AUTENTICAÇÃO AO CARREGAR
+        // ==========================================================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Se o usuário estiver logado, redireciona para a home
+                console.log("Usuário já logado. Redirecionando.");
+                window.location.replace('index.html');
+            } else {
+                // Se deslogado, garante que a mensagem de erro (ou sucesso anterior) está limpa.
+                message.textContent = ''; 
+            }
+        });
 
         // Login com email/senha
         form.addEventListener('submit', async (e) => {
@@ -79,7 +112,7 @@
                 message.style.color = '#27ae60';
                 
                 setTimeout(() => {
-                    window.location.href = 'perfil.html';
+                    window.location.href = 'index.html';
                 }, 1500);
             } catch (err) {
                 message.textContent = traduzErro(err);

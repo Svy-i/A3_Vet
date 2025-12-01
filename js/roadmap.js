@@ -137,25 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
             default: return '';
         }
     }
-
-    function updateRoadmapNodeIcon(topicId, status) {
-        const nodeButton = document.querySelector(`.node-button[data-topic-id="${topicId}"]`);
-        
-        if (nodeButton) {
-            const nodeInner = nodeButton.querySelector('.node-inner');
-            
-            if (nodeInner) {
-                const newIconHtml = getStatusIcon(status); 
-                nodeInner.innerHTML = newIconHtml;
-                
-                if (status === 'completed') {
-                    nodeButton.classList.add('completed');
-                } else {
-                    nodeButton.classList.remove('completed');
-                }
-            }
-        }
-    }
     
     // --- Funções Auxiliares (Anotações/Vídeo) ---
     
@@ -195,8 +176,9 @@ async function loadNotes(topicId) {
     if (currentUser && db) { // Usando 'db' globalmente importado
         try {
             const docSnap = await getDoc(doc(db, 'notes', currentUser.uid));
-            if (docSnap.exists() && docSnap.data()[topicId]) {
-                return docSnap.data()[topicId];
+            if (docSnap.exists()) {
+                // Retorna o campo específico do ID do tópico. Se não existir, retorna ''
+                return docSnap.data()[topicId] || ''; 
             }
         } catch (error) {
             console.error("Erro ao carregar anotações do Firestore:", error);
@@ -306,7 +288,6 @@ async function loadNotes(topicId) {
     function showIframeErrorMessage(title, youtubeUrl) {
         if (!videoModal || !videoModalIframe) return;
         
-        // Esconder iframe e player local
         videoModalIframe.style.display = 'none';
         if (videoModalPlayer) {
             videoModalPlayer.style.display = 'none';
@@ -423,13 +404,16 @@ async function loadNotes(topicId) {
         nodeDiv.className = 'roadmap-node';
         
         const hasSubtopics = topic.subtopics.length > 0;
+        const disableSubtopicsDisplay = topic.id === 'teste-final';
         const lineWidth = isLast ? 0 : (hasSubtopics ? 280 : 200);
+
+        const completionClass = topic.status === 'completed' ? ' completed' : '';
 
         nodeDiv.innerHTML = `
             <p class="node-title ${topic.isPlaceholder ? 'placeholder' : ''}">${topic.title}</p>
             
             <div class="node-wrapper">
-                <button class="node-button" data-topic-id="${topic.id}" aria-label="View ${topic.title}">
+                <button class="node-button${completionClass}" data-topic-id="${topic.id}" aria-label="View ${topic.title}">
                     <div class="node-glow"></div>
                     <div class="node-outer">
                         <div class="node-inner">
@@ -447,8 +431,7 @@ async function loadNotes(topicId) {
                 ` : ''}
             </div>
             
-            ${hasSubtopics ? `
-                <div class="node-subtopics">
+            ${(hasSubtopics && !disableSubtopicsDisplay) ? ` <div class="node-subtopics">
                     <div class="subtopics-card">
                         <ul class="subtopics-list">
                             ${topic.subtopics.map(subtopic => `
@@ -466,7 +449,6 @@ async function loadNotes(topicId) {
         return nodeDiv;
     }
     
-    // 🔑 Atualizado para usar fetchProgressMap e updateTopicStatus (com progressMap)
     window.syncRoadmapStatus = async function() {
         const progressMap = await fetchProgressMap(); // Busca progresso do Firebase ou LocalStorage
 
@@ -537,10 +519,8 @@ async function loadNotes(topicId) {
         }
     });
 
-    // Calcula e arredonda a porcentagem
     const percentage = totalValidTopics === 0 ? 0 : Math.round((completedCount / totalValidTopics) * 100);
 
-    // Salva a porcentagem no documento do usuário na coleção 'usuarios' (onde a Home lê)
     try {
         // 🚨 NOTA: A Home lê de 'usuarios', então salvamos aqui.
         const userRef = doc(db, 'usuarios', currentUser.uid); 
@@ -555,7 +535,6 @@ async function loadNotes(topicId) {
         console.error("Erro ao salvar progresso total no Firestore:", error);
     }
     
-    // 🚨 PASSO CRUCIAL: Chama a função global definida no home.js para atualizar a barra da Home
     if (window.updateHomeProgress) {
         window.updateHomeProgress(currentUser.uid); // Passa o UID para forçar a leitura correta
     }
@@ -596,8 +575,7 @@ async function loadNotes(topicId) {
         const subtopicsDiv = document.getElementById('detailSubtopics');
         if (topic.subtopics && topic.subtopics.length > 0) {
             subtopicsDiv.innerHTML = `
-                <div class="section-header">${icons.bookOpen}<h3>Conteúdo Programático</h3></div>
-                <ul class="subtopics-detail-list">
+                <div class="section-header">${icons.fileText}<h3>Recursos</h3></div> <ul class="subtopics-detail-list">
                     ${topic.subtopics.map(subtopic => `
                         <li class="subtopic-detail-item">
                             <span class="subtopic-bullet">•</span>
@@ -614,11 +592,16 @@ async function loadNotes(topicId) {
             setTimeout(() => {
                 const subLinks = subtopicsDiv.querySelectorAll('.subtopic-link');
                 subLinks.forEach(link => {
-                    // Remover o target='_blank' para que possamos interceptar o clique
                     link.removeAttribute('target');
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         const url = link.getAttribute('href');
+                        
+                        if (url === 'medicina-quiz.html' || url.endsWith('.html')) {
+                             window.open(url, '_self');
+                             return; 
+                        }
+
                         const embed = normalizeEmbedUrl(url) || getYouTubeEmbedUrl(url) || url;
                         openVideoModal(embed, link.textContent.trim(), url);
                     });
@@ -628,14 +611,7 @@ async function loadNotes(topicId) {
             subtopicsDiv.style.display = 'none';
         }
         
-        // 6. Update Resources
-        const resourcesDiv = document.getElementById('detailResources');
-        if (topic.resources && topic.resources.length > 0) {
-            resourcesDiv.innerHTML = `<div class="section-header">${icons.fileText}<h3>Recursos</h3></div><div class="resources-list">${topic.resources.map(resource => `<div class="resource-item">${icons.fileText} <span class="resource-text">${resource}</span></div>`).join('')}</div>`;
-            resourcesDiv.style.display = 'block';
-        } else {
-            resourcesDiv.style.display = 'none';
-        }
+        
 
         // 7. Update Placeholder/Completion Button
         const placeholderDiv = document.getElementById('detailPlaceholder');
