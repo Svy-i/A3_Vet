@@ -1,0 +1,1092 @@
+/* ------------------ HEADER ------------------ */
+
+.roadmap-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.roadmap-header a {
+    text-decoration: none;
+}
+
+.header-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.gradient-underline {
+    width: 6rem;
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #FF4581, #4388DD);
+    margin-top: 0.5rem;
+}
+
+/* ------------------ MAIN CONTENT & LEGEND ------------------ */
+
+.main-content {
+    min-height: calc(100vh - 120px);
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+.intro-section {
+    margin-bottom: 3rem;
+    max-width: 48rem;
+}
+
+.intro-text {
+    color: #717182;
+    margin-bottom: 1rem;
+}
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #717182;
+}
+
+.legend-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-not-started {
+    background: #d1d5db;
+}
+
+.status-in-progress {
+    background: #3b82f6;
+}
+
+.status-completed {
+    background: #10b981;
+}
+
+/* ------------------ ROADMAP E NÓS ------------------ */
+
+.roadmap-container {
+    position: relative;
+    /* Mantendo o margin-left do primeiro bloco, que é crucial para roadmap horizontal grande. */
+    margin-left: -10rem; 
+    padding-bottom: 2rem;
+    /* Largura estática que sugere um scroll horizontal (do primeiro bloco). Se for 100%, remova. */
+    width: 2560px; 
+}
+
+.roadmap-path {
+    /* Alinhamento para roadmap horizontal (do primeiro bloco) */
+    display: flex;
+    align-items: center; 
+    overflow-x: auto;
+    padding-bottom: 10rem;
+    height: 400px; 
+}
+
+.roadmap-path-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+}
+
+.roadmap-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+/* Posicionamento dos títulos e subtópicos para o layout horizontal (do primeiro bloco) */
+.roadmap-path .roadmap-node .node-title {
+    position: absolute;
+    top: -2.5rem;
+    transform: translateX(-50%);
+    width: 150px;
+    text-align: center;
+    left: 50%;
+}
+
+.roadmap-path .roadmap-node .node-subtopics {
+    position: absolute;
+    bottom: -10rem;
+    width: 256px;
+    transform: translateX(-50%);
+    left: 50%;
+}
+
+.node-title {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    max-width: 200px;
+    color: #374151;
+}
+
+.node-title.placeholder {
+    color: #9ca3af;
+}
+
+.node-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.node-button {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.node-button:hover {
+    transform: scale(1.05);
+}
+
+.node-button.active {
+    transform: scale(1.1);
+}
+
+.node-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 69, 129, 0.3) 0%, rgba(255, 69, 129, 0) 70%);
+    filter: blur(8px);
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.node-button:hover .node-glow,
+.node-button.active .node-glow {
+    opacity: 1;
+}
+
+.node-outer {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 69, 129, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.node-button.active .node-outer {
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #FF4581;
+}
+
+.node-inner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #FF4581;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.node-icon {
+    width: 12px;
+    height: 12px;
+    color: white;
+}
+
+.node-line {
+    margin-left: 0;
+}
+
+.vertical-line {
+    width: 2px;
+    height: 48px;
+    background: #FF4581;
+    margin-top: 1.5rem;
+}
+
+/* ------------------ SUBTÓPICOS ------------------ */
+
+.node-subtopics {
+    width: 256px;
+    /* Removendo margin-top do segundo bloco para usar o posicionamento absoluto do primeiro */
+}
+
+.subtopics-card {
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.node-subtopics.completed .subtopics-card {
+    background-color: #e6f7e6; /* Verde muito claro para o fundo */
+    border: 1px solid #99e699; /* Borda verde suave */
+    box-shadow: 0 4px 8px rgba(0, 128, 0, 0.1); /* Sombra verde leve */
+}
+
+/* Opcional: Para o texto dentro do card concluído */
+.node-subtopics.completed .subtopic-bullet,
+.node-subtopics.completed .subtopics-list span {
+    color: #008000; /* Texto em verde */
+}
+
+.subtopics-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.subtopic-item {
+    font-size: 0.875rem;
+    color: #4b5563;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.subtopic-bullet {
+    color: #FF4581;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+/* ------------------ INFO MESSAGE ------------------ */
+
+.info-message {
+    margin-top: 4rem;
+    padding: 1.5rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.5rem;
+    max-width: 48rem;
+}
+
+.info-message p {
+    font-size: 0.875rem;
+    color: #1e40af;
+}
+
+/* ------------------ SIDEBAR (TOPIC DETAIL) ------------------ */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    display: none;
+}
+
+.overlay.show {
+    display: block;
+}
+
+.topic-detail {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100%;
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    border-left: 1px solid #e5e7eb;
+    overflow-y: auto;
+    z-index: 50;
+    transition: right 0.3s ease-in-out;
+}
+
+.topic-detail.show {
+    right: 0;
+}
+
+.topic-detail .detail-header {
+    /* Mantém o layout flex para alinhar o título/status à esquerda e os botões à direita */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 20px 10px 20px;
+}
+
+.detail-header-actions {
+    display: flex;
+    gap: 0; /* Não precisa de gap, pois só tem um botão (o de fechar) */
+    align-items: center;
+}
+
+.detail-header-content {
+    /* Mantém o alinhamento principal em coluna (Título em cima, Status/Anotações embaixo) */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    /* Remover a margem-direita grande se você a adicionou na última revisão, pois não é mais necessária aqui */
+    margin-right: 0; 
+}
+
+.header-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s, transform 0.1s;
+    /* Corrigir para usar a cor do texto principal do Dark Mode */
+    color: var(--color-text-primary); 
+}
+
+.header-action-btn:hover {
+    background-color: var(--color-bg-secondary); /* Cor de fundo ao passar o mouse */
+    transform: scale(1.05);
+}
+
+.notes-label {
+    /* Remove o estilo de botão circular/ícone */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s, transform 0.1s;
+    font-size: 14px; /* Tamanho da fonte similar ao de um link secundário */
+    font-weight: 600;
+    color: var(--color-text-secondary); /* Cor secundária sutil */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.notes-label:hover {
+    color: var(--color-pink-primary); /* Destaca ao passar o mouse */
+    background-color: transparent;
+    transform: none; /* Remove a transformação de escala */
+}
+
+/* Estilo do botão de anotações quando ATIVO (A área está aberta) */
+#notesBtn.active {
+    color: var(--color-pink-primary);
+    /* Ajusta o padding-bottom para compensar a borda inferior e manter a linha do texto */
+    padding-bottom: 2px; 
+    border-bottom: 2px solid var(--color-pink-primary);
+}
+
+/* --- Área de Anotações (escondida por padrão) --- */
+
+.notes-area {
+    padding: 0 20px;
+    max-height: 0; 
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.notes-area.show {
+    max-height: 250px; 
+    padding: 10px 20px 20px 20px;
+}
+
+.notes-action-item {
+    /* Base do estilo Resource Item */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Espaçamento entre o ícone e o texto */
+    padding: 0.25rem 0.75rem; /* Reduz o padding para se aproximar do status-badge */
+    font-size: 0.875rem; /* Mantém 14px, que é o tamanho comum para esses elementos */
+    line-height: 1.25rem; /* Adiciona line-height para ajudar no alinhamento vertical */
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb; /* Borda padrão */
+    color: #374151;
+    background: #f9fafb; /* Fundo sutil */
+    
+    /* Configurações de clique */
+    cursor: pointer;
+    transition: all 0.2s;
+
+    /* Reset de botão */
+    background-color: transparent;
+    font-size: 0.875rem; /* Tamanho da fonte igual ao do resource item */
+}
+
+.notes-action-item .notes-text {
+    font-size: 0.875rem;
+}
+
+.notes-action-item svg {
+    width: 14px; /* Tamanho do ícone um pouco menor */
+    height: 14px;
+}
+
+.notes-action-item:hover {
+    border-color: #FF4581; /* Destaque ao passar o mouse com a cor primária */
+    color: #FF4581;
+    background: #f3f4f6;
+}
+
+.notes-action-item.active {
+    background: #fef3f6; /* Fundo levemente rosado/destacado */
+    color: #FF4581;
+    border-color: #FF4581; /* Borda destacada */
+}
+
+.notes-action-item .icon-pink {
+    color: #FF4581; /* Garante que o ícone é rosa/destaque */
+}
+
+/* ESTILOS DE DARK MODE PARA NOTES ACTION ITEM */
+html.dark-mode #notesBtn {
+    color: #d0d0d0;
+    border-color: transparent;
+}
+
+html.dark-mode #notesBtn:hover {
+    color: #FF7AA7; /* Rosa mais claro para contraste */
+}
+
+/* Quando o botão está ativo */
+html.dark-mode #notesBtn.active {
+    color: #FF4581;
+    border-bottom: 2px solid #FF4581;
+}
+
+/* Área expansível das anotações */
+html.dark-mode .notes-area {
+    background: #1e1e1e;
+}
+
+/* Textarea */
+html.dark-mode #topicNotes {
+    background: #121212 !important;
+    border: 1px solid #444 !important;
+    color: #f5f5f5 !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Placeholder legível no dark */
+html.dark-mode #topicNotes::placeholder {
+    color: #888;
+}
+
+/* Botão/Badge de anotações (a pastilha com ícone) */
+html.dark-mode .notes-action-item {
+    background: #1f1f1f;
+    border: 1px solid #333;
+    color: #f0f0f0;
+}
+
+html.dark-mode .notes-action-item:hover {
+    background: #2a2a2a;
+    border-color: #FF4581;
+    color: #FF7AA7;
+}
+
+/* Quando ativo */
+html.dark-mode .notes-action-item.active {
+    background: #331d28; /* rosa muito escuro, elegante */
+    border-color: #FF4581;
+    color: #FF4581;
+}
+
+/* Ícone rosa dentro do botão */
+html.dark-mode .notes-action-item .icon-pink {
+    color: #FF7AA7 !important;
+}
+
+/* Ajuste para ficar mais visível quando ativo */
+html.dark-mode .notes-action-item.active .icon-pink {
+    color: #FF4581 !important;
+}
+
+html.dark-mode .notes-action-item {
+    background: #2a2a2a; 
+    border: 1px solid #333333;
+    color: #f0f0f0; 
+}
+
+html.dark-mode .notes-action-item:hover {
+    background: #333333;
+    border-color: #f0f0f0; 
+}
+
+html.dark-mode .notes-action-item.active {
+    background: #3a2535; /* Fundo escuro sutilmente rosado */
+    border-color: #FF4581;
+    color: #FF4581; 
+}
+
+
+#topicNotes {
+    /* Mantido o estilo de textarea */
+    width: 100%;
+    min-height: 200px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    color: #6b7280;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.status-and-actions {
+    /* NOVO: Usa flexbox para alinhar o Status e o rótulo Anotações horizontalmente */
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espaço entre o Status (badge) e o rótulo Anotações */
+    margin-top: 5px; /* Pequena margem para separar do título se o gap do .detail-header-content for pequeno */
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    width: fit-content;
+}
+
+.status-badge.not-started {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.status-badge.in-progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-badge.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.detail-content {
+    padding: 1.5rem;
+}
+
+.detail-section {
+    margin-bottom: 1.5rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.section-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-pink {
+    color: #FF4581;
+}
+
+.icon-blue {
+    color: #4388DD;
+}
+
+.section-description {
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.subtopics-detail-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.subtopic-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.subtopic-detail-item:hover {
+    background: #f3f4f6;
+}
+
+.subtopic-detail-text {
+    color: #374151;
+}
+
+.resources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    transition: border-color 0.2s;
+    cursor: pointer;
+}
+
+.resource-item:hover {
+    border-color: #4388DD;
+}
+
+.resource-text {
+    color: #374151;
+}
+
+.detail-actions {
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.detail-actions .btn-outline.completed {
+    background-color: #f72585;
+    color: white;
+    border-color: #f72585;
+    /* Opcional: Adicionar um ícone de check se quiser */
+}
+
+.detail-actions .btn-outline {
+    background-color: transparent;
+    border: 2px solid #f72585;
+    color: #f72585;
+}
+
+.btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #FF4581;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #e63d73;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.btn-outline:hover {
+    background: #f9fafb;
+}
+
+.placeholder-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 0.5rem;
+}
+
+.placeholder-message p {
+    font-size: 0.875rem;
+    color: #92400e;
+}
+
+/* ------------------ VIDEO PANEL (LATERAL ESQUERDA) ------------------ */
+/* Controla a exibição de vídeos na lateral esquerda (Miniplayer/Sidebar) */
+/* ================================================================= */
+
+.video-panel {
+    position: fixed;
+    left: 0;
+    top: 72px; /* abaixo do cabeçalho */
+    width: 360px;
+    height: calc(100% - 72px);
+    background: var(--color-bg-primary); /* Variável Dark/Light Mode */
+    border-right: 1px solid var(--color-border); /* Variável Dark/Light Mode */
+    padding: 1rem;
+    overflow-y: auto;
+    z-index: 45;
+    transform: translateX(-100%); /* Esconde por padrão */
+    transition: transform 0.28s ease-in-out;
+}
+.video-panel.show {
+    transform: translateX(0); /* Mostra o painel */
+}
+.video-panel h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+}
+.video-panel .close-panel {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+}
+.video-panel-content {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.video-card {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.video-iframe {
+    width: 100%;
+    height: 200px;
+    border: 0;
+    display: block;
+}
+
+/* ------------------ Ajuste do Conteúdo principal ao abrir o Painel (miniplayer) */
+/* O JavaScript deve adicionar uma classe ao body ou container para ativar este estilo */
+.roadmap-container.shift-left {
+    margin-left: 360px; /* Move o conteúdo principal para a direita, dando espaço para o miniplayer */
+    width: calc(2560px - 360px); /* Ajusta a largura se a largura original for fixa */
+}
+
+
+/* ================================================================= */
+/* ------------------ VIDEO MODAL (CENTRAL) ------------------ */
+/* Controla a exibição de vídeos em uma janela modal no centro da tela */
+/* ================================================================= */
+
+.video-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+}
+.video-modal.show {
+    display: flex;
+}
+.video-modal-content {
+    width: min(900px, 95%);
+    background: var(--color-bg-primary);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    overflow: hidden;
+    position: relative;
+}
+.close-video-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 65;
+}
+.video-frame-wrap {
+    background: black;
+}
+.video-modal h3 {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #fff;
+    background: linear-gradient(90deg,var(--color-pink-primary),var(--color-blue-primary));
+}
+/* Estilo do iframe dentro do modal */
+.video-iframe {
+    width: 100%;
+    height: 56vw; /* 16:9 aspect ratio (56.25%) para preencher a largura */
+    max-height: 600px;
+    display: block;
+}
+
+/* ------------------ RESPONSIVIDADE ESPECÍFICA ------------------ */
+
+@media (max-width: 1024px) {
+    /* Esconde o painel lateral em tablets e dispositivos menores */
+    .video-panel { 
+        display: none; 
+    }
+    
+    /* Garante que o roadmap não se desloque se o painel estiver oculto */
+    .roadmap-container { 
+        margin-left: 0 !important; 
+    }
+}
+
+@media (max-width: 768px) {
+    /* Modal de tela cheia em dispositivos móveis */
+    .video-modal-content { 
+        width: 100%; 
+        height: 100%;
+        border-radius: 0;
+    }
+    .video-modal-content h3 { 
+        display: none; 
+    }
+    .video-iframe { 
+        height: 100%; 
+        max-height: 100vh;
+    }
+}
+
+/* ==================================== */
+/* 🌙 PARTE 2: DARK MODE (Consolidado) */
+/* ==================================== */
+
+/* Otimização: Agrupando seletores com o mesmo background e borda */
+html.dark-mode .roadmap-header,
+html.dark-mode .topic-detail,
+html.dark-mode .detail-header {
+    background: #1e1e1e; /* Fundo mais escuro para elementos "elevados" */
+}
+
+/* Borda e Sombra do Sidebar */
+html.dark-mode .topic-detail {
+    border-left: 1px solid #333333;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .roadmap-header,
+html.dark-mode .detail-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Títulos */
+html.dark-mode .node-title {
+    color: white; 
+}
+
+/* ⭐️ CORREÇÃO FINAL: Título principal da sidebar e títulos de seção brancos */
+/* 1. Garante que o H2 do título principal fique branco */
+html.dark-mode #detailTitle,
+/* 2. Garante que qualquer título dentro do .detail-header-content (como um h1/h2) fique branco */
+html.dark-mode .detail-header-content,
+/* 3. Força a cor branca para o cabeçalho das seções (onde fica "Conteúdo Programático") */
+html.dark-mode .section-header, 
+html.dark-mode .section-header * { 
+    color: #f0f0f0 !important; /* Força a cor para branco em todos os textos de título primário */
+}
+
+/* Texto Secundário / Descrições */
+html.dark-mode .section-description,
+html.dark-mode .subtopic-item {
+    color: #a0a0a0;
+}
+
+/* Botão Outline */
+html.dark-mode .btn-outline {
+    background: #1e1e1e;
+    border: 1px solid #333333;
+    color: #f0f0f0;
+}
+html.dark-mode .btn-outline:hover {
+    background: #2a2a2a;
+}
+
+/* Cartões / Itens Interativos */
+html.dark-mode .subtopics-card,
+html.dark-mode .resource-item,
+html.dark-mode .subtopic-detail-item {
+    background: #2a2a2a; /* Fundo dos cartões escuro */
+    border: 1px solid #333333;
+}
+html.dark-mode .subtopics-card {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-mode .subtopic-detail-item:hover {
+    background: #333333;
+}
+
+/* Texto Primário em Cartões */
+html.dark-mode .subtopic-detail-text,
+html.dark-mode .resource-text {
+    color: #f0f0f0;
+}
+
+/* ⭐️ Correção do ícone de recurso */
+html.dark-mode .resource-item svg {
+    color: #d1d1d1; /* Cinza claro para o ícone */
+}
+
+/* ------------------ ESTILOS DE DARK MODE PARA NOTES ACTION ITEM (Mantidos) */
+html.dark-mode .notes-action-item {
+    background: #2a2a2a; 
+    border: 1px solid #333333;
+    color: #f0f0f0; 
+}
+
+html.dark-mode .notes-action-item:hover {
+    background: #333333;
+    border-color: #f0f0f0; 
+}
+
+html.dark-mode .notes-action-item.active {
+    background: #3a2535; /* Fundo escuro sutilmente rosado */
+    border-color: #FF4581;
+    color: #FF4581; 
+}
+
+/* ==================================== */
+/* 📱 PARTE 3: RESPONSIVIDADE E ANIMAÇÕES */
+/* ==================================== */
+
+@media (max-width: 1024px) {
+    .roadmap-path {
+        flex-direction: column;
+        align-items: center;
+        gap: 3rem;
+        /* Limpeza das regras horizontais de largura/margem: */
+        width: auto; 
+        margin-left: 0;
+        padding-bottom: 2rem;
+        height: auto;
+        /* Alinhamento dos itens: */
+        align-items: center;
+    }
+
+    .node-line {
+        display: none;
+    }
+    
+    .roadmap-path .roadmap-node .node-title {
+        /* Remove o posicionamento absoluto para que o título flua normalmente acima do nó */
+        position: static; 
+        transform: none;
+        left: auto;
+    }
+    
+    .roadmap-path .roadmap-node .node-subtopics {
+        /* Remove o posicionamento absoluto para que os sub-tópicos fluam normalmente abaixo do nó */
+        position: static;
+        transform: none;
+        left: auto;
+        bottom: auto;
+        margin-top: 1rem; /* Adiciona margem entre o nó e a lista de subtópicos */
+    }
+
+    .overlay.show {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 1rem;
+    }
+
+    .container {
+        padding: 2rem 1rem;
+    }
+
+    .home-btn span {
+        display: none;
+    }
+
+    .topic-detail {
+        max-width: 100%;
+    }
+}
+
+/* Ajuste de Posicionamento para Telas Maiores (do primeiro bloco) */
+@media (min-width: 1025px) {
+    .roadmap-node {
+        position: relative;
+    }
+    
+    .roadmap-path .roadmap-node .node-subtopics {
+        bottom: -15rem; 
+        position: absolute;
+        top: unset; 
+        transform: translateX(-50%);
+        left: 50%;
+        width: 280px; /* Mantém a largura maior */
+    }
+}
+
+/* ANIMAÇÕES (Mantidas de ambos) */
+@keyframes slideInRight {
+    from {
+        right: -100%;
+    }
+    to {
+        right: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

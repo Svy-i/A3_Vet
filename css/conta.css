@@ -1,0 +1,312 @@
+/* ================================================= */
+/* CSS DA TELA DE CADASTRO (conta.css)       */
+/* ================================================= */
+
+/* --- Estilos do Container Principal --- */
+
+.login-container {
+    /* * Base: Usa as variáveis de cor definidas no :root e body.dark-mode (em main.css) 
+    * --container-bg é a cor de fundo do cartão/caixa.
+    */
+    background-color: var(--container-bg, #fff); 
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    text-align: center;
+    margin: 50px auto; 
+    /* Transição suave para o Dark Mode */
+    transition: background-color 0.5s, box-shadow 0.5s;
+}
+
+/* Ajuste do box-shadow no Dark Mode */
+body.dark-mode .login-container {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Estilos do Título e Texto --- */
+
+.login-container h1 {
+    margin-bottom: 25px;
+    /* Usa a cor geral do texto */
+    color: var(--body-text, #333); 
+    transition: color 0.5s;
+}
+
+/* 🎯 CORREÇÃO: Força o H1 dentro do container de perfil/login a ser preto no Dark Mode, 
+   * sobrescrevendo a regra global de h1 do main.css.
+   * A regra anterior com !important não era suficiente, pois ela era seguida 
+    * por outras regras que a sobrescreviam. Mantenha essa regra.
+   */
+body.dark-mode .login-container h1 {
+    color: #333 !important; /* Mantém o texto escuro para contraste com o fundo claro do container */
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    /* Usa a cor geral do texto */
+    color: var(--body-text, #555);
+    transition: color 0.5s;
+}
+
+/* --- Estilos dos Campos de Formulário (Input e Select) --- */
+
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    box-sizing: border-box; 
+    
+    /* Cores que devem mudar com o modo: */
+    background-color: var(--input-bg, #fff); /* Fundo do campo */
+    color: var(--body-text, #333); /* Cor do texto digitado */
+    border: 1px solid var(--border-color, #ddd); /* Cor da borda */
+    
+    transition: background-color 0.5s, color 0.5s, border-color 0.5s;
+}
+
+/* Placeholder no Dark Mode */
+body.dark-mode .input-group input::placeholder,
+body.dark-mode .input-group select option {
+    color: #a0a0a0; /* Cinza claro para o placeholder no modo escuro */
+}
+
+/* --- Estilos do Botão de Registro --- */
+
+.login-container {
+    background-color: #ffffff; /* Fundo branco no modo claro */
+    /* ... outras propriedades de layout (padding, width, margin) ... */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 450px;
+    text-align: center;
+    margin: 50px auto;
+    transition: background-color 0.5s, color 0.5s, box-shadow 0.5s;
+}
+
+/* Texto e Títulos (Pretos no modo claro) */
+.login-container h1,
+.input-group label {
+    color: #333333;
+    transition: color 0.5s;
+}
+
+/* Campos de Input e Select (Fundo branco, texto preto) */
+.input-group input,
+.input-group select {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #ddd;
+    transition: background-color 0.5s, color 0.5s, border-color 0.5s;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: white; /* Cor fixa: Verde para sucesso/registro */
+    color: black; /* Cor fixa: Branco */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    /* Manter transição rápida no hover, mas o botão em si não muda de cor com o Dark Mode */
+    transition: background-color 0.3s ease; 
+}
+
+.login-container button:hover {
+    background-color: #1e7e34;
+}
+
+
+/* --- Mensagens de Feedback --- */
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.error-message {
+    color: #dc3545; /* Vermelho (Light Mode) */
+    transition: color 0.5s;
+}
+
+.success-message {
+    color: #28a745; /* Verde (Light Mode) */
+    transition: color 0.5s;
+}
+
+/* Ajuste das cores de feedback no Dark Mode para melhor contraste */
+body.dark-mode .error-message {
+    color: #ff6b6b; /* Vermelho mais vibrante para contraste */
+}
+
+body.dark-mode .success-message {
+    color: #69f0ae; /* Verde neon/claro para contraste */
+}
+
+body.dark-mode .login-container {
+    /* 1. Fundo do container mais escuro */
+    background-color: #1e1e1e; /* Um cinza escuro, quase preto */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .login-container h1, /* REMOVIDO DAQUI para não conflitar! */
+body.dark-mode .input-group label {
+    /* 2. Todos os textos internos ficam brancos ou cinza claro */
+    color: #f0f0f0; /* Branco suave */
+}
+
+/* ⚠️ ATENÇÃO: Se a sua tela de perfil tem *outros* textos fora de h1, 
+   * eles ainda ficarão brancos devido à regra acima e à cor global do body. 
+   * Se os dados do usuário (p#user-email, etc.) precisam ser pretos, você deve adicionar uma regra
+   * específica para eles aqui ou alterar o fundo do container no modo escuro.
+   */
+
+
+body.dark-mode .input-group input,
+body.dark-mode .input-group select {
+    /* 3. Campos de Input também escurecem, mas não tanto quanto o container,
+     * para manter o contraste visual.
+     */
+    background-color: #2c2c2c;
+    color: #f0f0f0; /* Texto digitado branco */
+    border: 1px solid #444444; /* Borda mais clara que o fundo */
+}
+
+body.dark-mode .input-group select option {
+    /* Garante que o texto das opções no dropdown seja branco */
+    background-color: #2c2c2c;
+    color: #f0f0f0;
+}
+
+/* --- Estilo do Botão Google --- */
+.login-container .google-btn {
+    width: 100%;
+    padding: 10px;
+    
+    /* Light Mode: Novo Verde do Botão Registrar */
+    background-color: #28a745; 
+    
+    color: white; /* Texto Branco */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 20px;
+
+    /* Configurações de layout (mantidas) */
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    
+    transition: background-color 0.3s ease, color 0.3s;
+}
+
+.login-container .google-btn:hover {
+    /* Hover Light Mode: Ligeiramente mais escuro (como o hover do botão Registrar) */
+    background-color: #1e7e34; 
+}
+
+/* Estilização do ícone (img ou i) */
+.google-btn img,
+.google-btn i {
+    width: 20px;
+    height: 20px;
+    position: static; 
+    margin-right: 10px; 
+    align-self: center; 
+    flex-shrink: 0;
+}
+
+/* --- Estilo do Separador "OU" --- */
+.separator {
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: var(--body-text, #555); /* Usa a cor de texto definida */
+    transition: color 0.5s;
+}
+
+/* Linha horizontal antes e depois do "OU" */
+.separator::before,
+.separator::after {
+    content: "";
+    flex-grow: 1;
+    height: 1px;
+    background-color: var(--border-color, #ccc); /* Cor da linha */
+    margin: 0 10px;
+    transition: background-color 0.5s;
+}
+
+/* --- Ajuste Dark Mode --- */
+
+/* No Dark Mode, o botão do Google pode ficar um pouco mais escuro se desejar, mas a cor primária é mantida */
+body.dark-mode .google-btn {
+    background-color: #1a7d30; /* Fundo do input escuro */
+    color: var(--input-text); /* Texto branco */
+    border: none; /* Sem borda no Dark Mode */
+}
+
+body.dark-mode .google-btn:hover {
+    /* HOVER do botão Google no Dark Mode (mantido como um cinza claro para feedback) */
+    background-color: #2c974b; 
+}
+
+body.dark-mode .separator{
+    color: white;
+}
+
+/* ❌ REGRA REMOVIDA: ESTA ESTAVA CONFLITANDO E FORÇANDO O BRANCO
+body.dark-mode .login-container h1{
+    color: white;
+}
+*/
+
+.login-container button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    
+    /* Light Mode: Verde Padrão */
+    background-color: #28a745; 
+    
+    color: white; 
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    
+    transition: background-color 0.3s ease; 
+}
+
+.login-container button[type="submit"]:hover {
+    background-color: #1e7e34;
+}
+
+/* --- Ajuste Dark Mode --- */
+
+body.dark-mode .login-container button[type="submit"] {
+    background-color: #1a7d30; /* Fundo verde escuro no Dark Mode */
+    color: white; 
+    border: none; /* Se você quiser remover a borda do botão Registrar também no Dark Mode */
+}
+
+body.dark-mode .login-container button[type="submit"]:hover {
+    background-color: #2c974b; /* UM VERDE MAIS CLARO PARA O HOVER NO DARK MODE */
+}

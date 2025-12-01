@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresso do Curso</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Roadmap da Matéria</h1>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="fill"></div>
+        </div>
+        <p id="progress-text"></p>
+    </div>
+
+    <hr>
+
+    <h2>Tópicos da Matéria</h2>
+
+    <div class="topic-list">
+        <label class="topic">
+            <input type="checkbox" onchange="toggleTopic('mod1-topico1')">
+            Introdução
+        </label>
+
+        <label class="topic">
+            <input type="checkbox" onchange="toggleTopic('mod1-topico2')">
+            Estrutura básica
+        </label>
+
+        <label class="topic">
+            <input type="checkbox" onchange="toggleTopic('mod1-topico3')">
+            Funções
+        </label>
+
+        <label class="topic">
+            <input type="checkbox" onchange="toggleTopic('mod1-topico4')">
+            Eventos e lógica
+        </label>
+
+        <label class="topic">
+            <input type="checkbox" onchange="toggleTopic('mod1-topico5')">
+            Projeto final do módulo
+        </label>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

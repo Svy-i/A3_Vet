@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="author" content="Svy">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada Vet</title>
+    <script>
+        (function () {
+            let savedTheme = localStorage.getItem('themePreference');
+            let isDarkMode = false;
+
+            if (savedTheme === 'dark') {
+                isDarkMode = true;
+            } else if (savedTheme === 'light') {
+                isDarkMode = false;
+            } else {
+                isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+
+            if (isDarkMode) {
+                // Adiciona a classe dark-mode na tag <html> ou <body> ANTES do CSS
+                document.documentElement.classList.add('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" href="images/animal-welfare.png" type="image/x-icon">
+</head>
+
+<body>
+    <header>
+        <nav aria-label="primary-navigation">
+            <div class="nav-left">
+                <a href="perfil.html" id="profile-link" style="display: none;" aria-label="Perfil do Usuário" class="profile-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </a>
+                <input type="checkbox" id="dark-mode-toggle">
+                <label for="dark-mode-toggle" class="switch-label"></label>
+            </div>
+            <div class="nav-right">
+                <a href="login.html">Login</a> <a href="cadastro.html">Cadastre-se</a>
+            </div>
+        </nav>
+    </header>
+    <hr>
+    <main>
+        <article id="modules">
+            <h1>Jornada Vet</h1>
+            <div id="buttons-container">
+
+                <div class="module-progress-wrapper">
+                    <a href="medicina.html" class="module-button-style">Medicina</a>
+                    <div class="progress-container home-progress">
+                        <div class="progress-bar">
+                            <div id="medicina-progress-bar" class="fill"></div>
+                        </div>
+                        <p class="progress-text-small">Progresso: <span id="medicina-progress-percentage">0%</span></p>
+                    </div>
+                </div>
+
+                <div class="module-progress-wrapper">
+                    <a href="praticas_veterinarias.html" class="module-button-style">Práticas Veterinárias</a>
+                    <div class="progress-container home-progress">
+                        <div class="progress-bar">
+                            <div id="praticas_veterinarias-progress-bar" class="fill"></div>
+                        </div>
+                        <p class="progress-text-small">Progresso: <span
+                                id="praticas_veterinarias-progress-percentage">0%</span></p>
+                    </div>
+                </div>
+
+                <div class="module-progress-wrapper">
+                    <a href="sistemas_vitais.html" class="module-button-style">Sistemas Vitais</a>
+                    <div class="progress-container home-progress">
+                        <div class="progress-bar">
+                            <div id="sistemas_vitais-progress-bar" class="fill"></div>
+                        </div>
+                        <p class="progress-text-small">Progresso: <span
+                                id="sistemas_vitais-progress-percentage">0%</span></p>
+                    </div>
+                </div>
+
+                <div class="module-progress-wrapper">
+                    <a href="reproducao_animal.html" class="module-button-style">Reprodução Animal</a>
+                    <div class="progress-container home-progress">
+                        <div class="progress-bar">
+                            <div id="reproducao_animal-progress-bar" class="fill"></div>
+                        </div>
+                        <p class="progress-text-small">Progresso: <span
+                                id="reproducao_animal-progress-percentage">0%</span></p>
+                    </div>
+                </div>
+
+                <div class="module-progress-wrapper">
+                    <a href="biotecnologia.html" class="module-button-style">Biotecnologias</a>
+                    <div class="progress-container home-progress">
+                        <div class="progress-bar">
+                            <div id="biotecnologia-progress-bar" class="fill"></div>
+                        </div>
+                        <p class="progress-text-small">Progresso: <span id="biotecnologia-progress-percentage">0%</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="module-progress-wrapper">
+                    <a href="saude_animal.html" class="module-button-style">Saúde Animal</a>
+                    <div class="progress-container home-progress">
+                        <div class="progress-bar">
+                            <div id="saude_animal-progress-bar" class="fill"></div>
+                        </div>
+                        <p class="progress-text-small">Progresso: <span id="saude_animal-progress-percentage">0%</span>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+    </main>
+    <hr>
+    <footer>
+        <p>
+            Website icon made by Andika Syaif from www.flaticon.com
+        </p>
+    </footer>
+
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/theme.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/home.js"></script>
+</body>
+
+</html>
