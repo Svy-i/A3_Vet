@@ -10,6 +10,13 @@ import {
 
 // ----------- Função para formatar datas ----------------
 function formatarData(dataISO) {
+    // Se vier no formato "YYYY-MM-DD", tratamos manualmente
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dataISO)) {
+        const [ano, mes, dia] = dataISO.split("-");
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    // Se vier um timestamp ISO completo, tratamos normalmente
     const data = new Date(dataISO);
     return data.toLocaleDateString("pt-BR", {
         day: "2-digit",

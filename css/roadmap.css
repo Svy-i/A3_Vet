@@ -530,24 +530,6 @@ html.dark-mode .notes-action-item.active .icon-pink {
     color: #FF4581 !important;
 }
 
-html.dark-mode .notes-action-item {
-    background: #2a2a2a; 
-    border: 1px solid #333333;
-    color: #f0f0f0; 
-}
-
-html.dark-mode .notes-action-item:hover {
-    background: #333333;
-    border-color: #f0f0f0; 
-}
-
-html.dark-mode .notes-action-item.active {
-    background: #3a2535; /* Fundo escuro sutilmente rosado */
-    border-color: #FF4581;
-    color: #FF4581; 
-}
-
-
 #topicNotes {
     /* Mantido o estilo de textarea */
     width: 100%;
@@ -803,12 +785,6 @@ html.dark-mode .notes-action-item.active {
     background: #000;
     border: 1px solid var(--color-border);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-.video-iframe {
-    width: 100%;
-    height: 200px;
-    border: 0;
-    display: block;
 }
 
 /* ------------------ Ajuste do Conteúdo principal ao abrir o Painel (miniplayer) */

@@ -42,7 +42,6 @@ async function toggleTopic(topicId) {
             await setDoc(userRef, { [topicId]: newState }, { merge: true });
         } catch (error) {
             console.error("Erro ao atualizar progresso no Firestore (toggleTopic):", error);
-            // ... fallback ...
         }
     } else {
         localStorage.setItem("progress", JSON.stringify({ ...currentProgress, [topicId]: newState }));
@@ -61,7 +60,6 @@ function updateTopicStatus(topicData, progressMap = null) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
     const roadmapContainer = document.getElementById('roadmapContainer');
     const topicDetail = document.getElementById('topicDetail');
     const overlay = document.getElementById('overlay');
@@ -72,8 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesBtn = document.getElementById('notesBtn');
     const notesArea = document.getElementById('notesArea');
     const topicNotes = document.getElementById('topicNotes');
-    // 💡 NOVO: Botão de salvar
-    const saveNotesBtn = document.getElementById('saveNotesBtn');
 
     const videoModal = document.getElementById('videoModal');
     const closeVideoModalBtn = document.getElementById('closeVideoModal');
@@ -109,45 +105,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveNotes() {
-        if (!selectedTopic) return;
+        if (!selectedTopic || !topicNotes) return;
         const topicId = selectedTopic.id;
         const content = topicNotes.value;
         notesCache[topicId] = content;
 
-        const user = auth.currentUser; // <<< Use auth.currentUser aqui!
+        const user = auth.currentUser;
 
-        if (user && db) { 
+        if (user && db) {
             try {
                 const ref = doc(db, "notes", user.uid);
                 await setDoc(ref, { [topicId]: content }, { merge: true });
             } catch (err) {
                 console.error("Erro ao salvar notas no Firestore (saveNotes):", err);
+                try {
+                    const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
+                    localNotes[topicId] = content;
+                    localStorage.setItem("localNotes", JSON.stringify(localNotes));
+                } catch (e) {
+                    console.error("Erro ao salvar notas no localStorage (fallback):", e);
+                }
             }
         } else {
-            // CORREÇÃO: Salvar LocalStorage para usuários deslogados
-            const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
-            localNotes[topicId] = content;
-            localStorage.setItem("localNotes", JSON.stringify(localNotes));
+            try {
+                const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
+                localNotes[topicId] = content;
+                localStorage.setItem("localNotes", JSON.stringify(localNotes));
+            } catch (e) {
+                console.error("Erro ao salvar notas no localStorage:", e);
+            }
         }
     }
 
     async function loadNotes(topicId) {
-    // 1. Tenta pegar do cache (o mais rápido após o primeiro carregamento)
         if (notesCache[topicId] !== undefined) {
             return notesCache[topicId];
         }
 
         const user = auth.currentUser;
 
-        // 2. Tenta carregar do Firestore (se houver usuário logado)
         if (user && db) {
             try {
                 const ref = doc(db, "notes", user.uid);
                 const snap = await getDoc(ref);
                 if (snap.exists()) {
                     const all = snap.data();
-                    // ✅ Preenche o cache com TUDO o que veio do Firestore
-                    notesCache = all; 
+                    notesCache = all;
                     return all[topicId] ?? "";
                 }
             } catch (err) {
@@ -156,11 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return "";
         }
 
-        // 3. Tenta carregar do LocalStorage (se NÃO houver usuário logado)
         try {
             const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
-            // ✅ Preenche o cache com TUDO o que veio do LocalStorage
-            notesCache = localNotes; 
+            notesCache = localNotes;
             return localNotes[topicId] ?? "";
         } catch (e) {
             console.error("Erro ao ler localNotes do localStorage:", e);
@@ -538,7 +539,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.hideTopicDetail = async function() {
-        // ❌ REMOVIDO: Salvamento automático ao fechar a sidebar
+        // before hiding, ensure notes are saved
+        await saveNotes();
         if (notesArea) notesArea.classList.remove('show');
         if (notesBtn) notesBtn.classList.remove('active');
         topicDetail.classList.remove('show');
@@ -569,17 +571,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof auth !== 'undefined' && auth) {
         auth.onAuthStateChanged(async (user) => {
-            currentUser = user; // <-- Definido aqui
+            currentUser = user;
             if (user) {
                 console.log("Usuário logado:", user.uid);
             } else {
                 console.log("Nenhum usuário logado.");
             }
-            
             await renderRoadmap();
             if (selectedTopic) {
                 const currentTopic = roadmapData.topics.find(t => t.id === selectedTopic.id);
-                if(currentTopic) await showTopicDetail(currentTopic);
+                if (currentTopic) await showTopicDetail(currentTopic);
             }
         });
     }
@@ -605,22 +606,54 @@ document.addEventListener('DOMContentLoaded', () => {
     if (completeBtn) completeBtn.addEventListener('click', handleCompleteClick);
 
     if (notesBtn) notesBtn.addEventListener('click', toggleNotesArea);
-    
-    // ❌ REMOVIDO: Salvamento automático no 'input'
-    // if (topicNotes) topicNotes.addEventListener('input', saveNotes); 
-    
-    // 💡 NOVO: Evento para salvar as anotações explicitamente
-    if (saveNotesBtn) saveNotesBtn.addEventListener('click', async () => {
-        await saveNotes();
-        // Feedback simples para o usuário
-        const originalText = saveNotesBtn.textContent;
-        saveNotesBtn.textContent = 'Salvo! ✅';
-        saveNotesBtn.disabled = true;
-        setTimeout(() => {
-            saveNotesBtn.textContent = originalText;
-            saveNotesBtn.disabled = false;
-        }, 1500);
+
+    // ---------- AUTOSAVE SETUP ----------
+    function debounce(fn, wait) {
+        let t = null;
+        return function (...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
+    }
+
+    const saveNotesDebounced = debounce(() => {
+        saveNotes().catch(err => console.error("Erro no autosave:", err));
+    }, 900);
+
+    if (topicNotes) {
+        topicNotes.addEventListener('input', () => {
+            saveNotesDebounced();
+        });
+        topicNotes.addEventListener('blur', () => {
+            saveNotes().catch(err => console.error("Erro ao salvar no blur:", err));
+        });
+    }
+
+    // Save when tab becomes hidden (better chance to persist before navigation)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            // best-effort (can't await here reliably)
+            saveNotes().catch(err => console.error("Erro ao salvar na visibilitychange:", err));
+        }
     });
+
+    // beforeunload: do a last attempt to store notes in localStorage (sync)
+    window.addEventListener('beforeunload', (e) => {
+        try {
+            if (selectedTopic && topicNotes) {
+                const topicId = selectedTopic.id;
+                const content = topicNotes.value;
+                // write to localStorage synchronously so it survives navigation
+                const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
+                localNotes[topicId] = content;
+                localStorage.setItem("localNotes", JSON.stringify(localNotes));
+            }
+        } catch (err) {
+            console.error("Erro no beforeunload:", err);
+        }
+        // no need to call preventDefault unless we want to show a prompt
+    });
+    // ---------- END AUTOSAVE SETUP ----------
 
     if (closeVideoModalBtn) closeVideoModalBtn.addEventListener('click', closeVideoModal);
     if (closeVideoPanelBtn) closeVideoPanelBtn.addEventListener('click', hideVideoPanel);
@@ -642,5 +675,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
 });
