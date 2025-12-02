@@ -1,31 +1,19 @@
-import { auth, db, doc, updateDoc, getDoc } from './firebase.js'; 
-// 🚨 2. Importação dos Dados do Roadmap
+import { auth, db, doc, updateDoc, setDoc, getDoc } from './firebase.js';
 import { roadmapData } from './data.js';
 
-// Calcula dinamicamente o total de tópicos
-const TOTAL_TOPICS_MEDICINA = roadmapData.topics.length; 
+const TOTAL_TOPICS_MEDICINA = roadmapData.topics.length;
 
-// Application state (Global)
 let selectedTopic = null;
-let currentUser = null; // 🔑 Adicionado para armazenar o usuário logado
+let currentUser = null;
+let notesCache = {};
 
-// =================================================================
-// FUNÇÕES GLOBAIS DE STATUS (Acessíveis fora do DOMContentLoaded)
-// =================================================================
-
-/**
- * Busca o mapa de progresso do Firestore ou, em fallback, do localStorage.
- * @returns {Promise<Object>} Um objeto de mapa de progresso {topicId: boolean}.
- */
 async function fetchProgressMap() {
     if (currentUser && db) {
         try {
-            // Assumindo que o progresso é armazenado na coleção 'progress'
-            const userRef = doc(db, 'progress', currentUser.uid); 
+            const userRef = doc(db, 'progress', currentUser.uid);
             const docSnap = await getDoc(userRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                // Retorna apenas chaves que são true (concluídas)
                 return Object.keys(data).reduce((acc, key) => {
                     if (data[key]) acc[key] = true;
                     return acc;
@@ -35,7 +23,6 @@ async function fetchProgressMap() {
             console.error("Erro ao carregar progresso do Firestore. Usando LocalStorage.", error);
         }
     }
-    // Fallback: LocalStorage
     try {
         return JSON.parse(localStorage.getItem("progress")) || {};
     } catch (e) {
@@ -43,63 +30,38 @@ async function fetchProgressMap() {
     }
 }
 
+async function toggleTopic(topicId) {
+    const currentProgress = await fetchProgressMap();
+    const newState = !currentProgress[topicId];
 
-/**
- * Alterna o status de conclusão de um tópico no Firestore/LocalStorage e redesenha o roadmap.
- * @param {string} topicId - O ID do tópico.
- * @returns {Promise<void>}
- */
-async function toggleTopic(topicId) { // 🔑 Tornada Assíncrona
-    const currentProgress = await fetchProgressMap(); // Busca o estado atual
-    const newState = !currentProgress[topicId]; 
-    
-    // 1. Atualiza no Firestore (se logado)
-    if (currentUser && db) {
+    const user = auth.currentUser;
+
+    if (user && db) {
         try {
-            const userRef = doc(db, 'progress', currentUser.uid);
-            await updateDoc(userRef, { 
-                [topicId]: newState 
-            });
+            const userRef = doc(db, 'progress', user.uid);
+            await setDoc(userRef, { [topicId]: newState }, { merge: true });
         } catch (error) {
-            console.error("Erro ao atualizar progresso no Firestore:", error);
-            // Fallback para LocalStorage
-            localStorage.setItem("progress", JSON.stringify({ ...currentProgress, [topicId]: newState }));
+            console.error("Erro ao atualizar progresso no Firestore (toggleTopic):", error);
+            // ... fallback ...
         }
     } else {
-        // 2. Atualiza no LocalStorage (se deslogado)
         localStorage.setItem("progress", JSON.stringify({ ...currentProgress, [topicId]: newState }));
     }
-    
-    // As chamadas para redesenho são tratadas por handleCompleteClick/renderRoadmap
-    // após a conclusão desta função assíncrona.
 }
 
-/**
- * Atualiza o status de um objeto de tópico baseado no mapa de progresso.
- * @param {object} topicData - O objeto do tópico (roadmapData.topics[i]).
- * @param {object} [progressMap=null] - O mapa de progresso buscado por fetchProgressMap.
- */
-function updateTopicStatus(topicData, progressMap = null) { // 🔑 Recebe progressMap
+function updateTopicStatus(topicData, progressMap = null) {
     const saved = progressMap || JSON.parse(localStorage.getItem("progress")) || {};
-    
     if (saved[topicData.id]) {
-        // 1. O status deve ser 'completed' se estiver no mapa de progresso
-        topicData.status = 'completed'; 
+        topicData.status = 'completed';
     } else if (topicData.isPlaceholder) {
         topicData.status = 'not-started';
     } else {
-        // 2. Se não estiver placeholder E não estiver concluído, é 'in-progress'
-        topicData.status = 'in-progress'; 
+        topicData.status = 'in-progress';
     }
 }
 
-// =================================================================
-// LÓGICA PRINCIPAL (Executada após o carregamento do DOM)
-// =================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 1. Variáveis e referências do DOM (ESCOPO LOCAL)
     const roadmapContainer = document.getElementById('roadmapContainer');
     const topicDetail = document.getElementById('topicDetail');
     const overlay = document.getElementById('overlay');
@@ -107,12 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeBtn = document.getElementById('homeBtn');
     const completeBtn = document.querySelector('#detailActions .btn-outline');
 
-    // Elementos de Anotações (V1)
     const notesBtn = document.getElementById('notesBtn');
     const notesArea = document.getElementById('notesArea');
     const topicNotes = document.getElementById('topicNotes');
+    // 💡 NOVO: Botão de salvar
+    const saveNotesBtn = document.getElementById('saveNotesBtn');
 
-    // Elementos de Vídeo (V2)
     const videoModal = document.getElementById('videoModal');
     const closeVideoModalBtn = document.getElementById('closeVideoModal');
     const videoModalIframe = document.getElementById('videoModalIframe');
@@ -122,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoPanelContent = document.getElementById('videoPanelContent');
     const closeVideoPanelBtn = document.getElementById('closeVideoPanel');
 
-    // Icons definitions
     const icons = {
         checkCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="node-icon"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
         circle: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="node-icon"><circle cx="12" cy="12" r="10"></circle></svg>`,
@@ -137,9 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             default: return '';
         }
     }
-    
-    // --- Funções Auxiliares (Anotações/Vídeo) ---
-    
+
     function toggleNotesArea() {
         if (!notesArea || !notesBtn) return;
         notesArea.classList.toggle('show');
@@ -149,46 +108,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function saveNotes() { 
-        if (!selectedTopic || !topicNotes) return;
-
+    async function saveNotes() {
+        if (!selectedTopic) return;
         const topicId = selectedTopic.id;
-        const notesContent = topicNotes.value;
+        const content = topicNotes.value;
+        notesCache[topicId] = content;
 
-        if (currentUser && db) {
+        const user = auth.currentUser; // <<< Use auth.currentUser aqui!
+
+        if (user && db) { 
             try {
-                // Assumindo coleção 'notes' e doc com uid
-                const notesRef = doc(db, 'notes', currentUser.uid);
-                await updateDoc(notesRef, { 
-                    [topicId]: notesContent
-                });
-            } catch (error) {
-                console.error("Erro ao salvar anotações no Firestore:", error);
-                localStorage.setItem(`notes-${topicId}`, notesContent);
+                const ref = doc(db, "notes", user.uid);
+                await setDoc(ref, { [topicId]: content }, { merge: true });
+            } catch (err) {
+                console.error("Erro ao salvar notas no Firestore (saveNotes):", err);
             }
         } else {
-            localStorage.setItem(`notes-${topicId}`, notesContent);
+            // CORREÇÃO: Salvar LocalStorage para usuários deslogados
+            const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
+            localNotes[topicId] = content;
+            localStorage.setItem("localNotes", JSON.stringify(localNotes));
         }
     }
 
-/** 🔑 ALTERADO: Carrega anotações do Firestore ou LocalStorage. */
-async function loadNotes(topicId) { 
-    if (currentUser && db) { // Usando 'db' globalmente importado
-        try {
-            const docSnap = await getDoc(doc(db, 'notes', currentUser.uid));
-            if (docSnap.exists()) {
-                // Retorna o campo específico do ID do tópico. Se não existir, retorna ''
-                return docSnap.data()[topicId] || ''; 
+    async function loadNotes(topicId) {
+    // 1. Tenta pegar do cache (o mais rápido após o primeiro carregamento)
+        if (notesCache[topicId] !== undefined) {
+            return notesCache[topicId];
+        }
+
+        const user = auth.currentUser;
+
+        // 2. Tenta carregar do Firestore (se houver usuário logado)
+        if (user && db) {
+            try {
+                const ref = doc(db, "notes", user.uid);
+                const snap = await getDoc(ref);
+                if (snap.exists()) {
+                    const all = snap.data();
+                    // ✅ Preenche o cache com TUDO o que veio do Firestore
+                    notesCache = all; 
+                    return all[topicId] ?? "";
+                }
+            } catch (err) {
+                console.error("Erro ao carregar notas do Firestore:", err);
             }
-        } catch (error) {
-            console.error("Erro ao carregar anotações do Firestore:", error);
+            return "";
+        }
+
+        // 3. Tenta carregar do LocalStorage (se NÃO houver usuário logado)
+        try {
+            const localNotes = JSON.parse(localStorage.getItem("localNotes") || "{}");
+            // ✅ Preenche o cache com TUDO o que veio do LocalStorage
+            notesCache = localNotes; 
+            return localNotes[topicId] ?? "";
+        } catch (e) {
+            console.error("Erro ao ler localNotes do localStorage:", e);
+            return "";
         }
     }
-    // Fallback para LocalStorage
-    return localStorage.getItem(`notes-${topicId}`) || '';
-}
-
-    // --- Funções de Vídeo (V2) ---
 
     function closeVideoModal() {
         if (!videoModal) return;
@@ -206,7 +184,6 @@ async function loadNotes(topicId) {
         }
         const errorDiv = videoModal.querySelector('#iframeErrorMessage');
         if (errorDiv) { errorDiv.remove(); }
-        // Não remove o overlay aqui se o topicDetail estiver aberto
         if (!topicDetail.classList.contains('show')) {
             overlay.classList.remove('show');
         }
@@ -218,18 +195,15 @@ async function loadNotes(topicId) {
             try { window.open(src, '_blank', 'noopener'); } catch (e) {}
             return;
         }
-
         if (videoModalIframe) {
             videoModalIframe.src = '';
             videoModalIframe.style.display = 'none';
         }
         const prevError = videoModal.querySelector('#iframeErrorMessage');
         if (prevError) prevError.remove();
-
         videoModalPlayer.src = src;
         videoModalPlayer.style.display = 'block';
         videoModalPlayer.pause();
-
         if (videoModalTitle) videoModalTitle.textContent = title || '';
         videoModal.classList.add('show');
         videoModal.setAttribute('aria-hidden','false');
@@ -241,31 +215,25 @@ async function loadNotes(topicId) {
             if (originalUrl) try { window.open(originalUrl, '_blank', 'noopener'); } catch (e) {}
             return;
         }
-
         const isLocalVideo = originalUrl && (originalUrl.match(/\.mp4(\?|$)/i) || originalUrl.startsWith('videos/') || originalUrl.startsWith('./videos/') || originalUrl.startsWith('/videos/'));
         if (isLocalVideo) {
             openLocalVideo(originalUrl, title);
             return;
         }
-
         const finalEmbed = normalizeEmbedUrl(embedUrl) || normalizeEmbedUrl(originalUrl) || embedUrl;
-
         if (!finalEmbed) {
             try { window.open(originalUrl || embedUrl, '_blank', 'noopener'); } catch (e) {}
             return;
         }
-
         try {
             if (!videoModalIframe) {
                 try { window.open(originalUrl || embedUrl, '_blank', 'noopener'); } catch (e) {}
                 return;
             }
-
             videoModalIframe.onload = null;
             videoModalIframe.onerror = null;
             const prevError = videoModal.querySelector('#iframeErrorMessage');
             if (prevError) prevError.remove();
-
             videoModalIframe.src = finalEmbed;
             videoModalIframe.style.display = 'block';
             if (videoModalPlayer) {
@@ -273,12 +241,10 @@ async function loadNotes(topicId) {
                 videoModalPlayer.src = '';
             }
             try { videoModalIframe.focus(); } catch (e) {}
-
         } catch (err) {
             showIframeErrorMessage(title, originalUrl);
             return;
         }
-
         if (videoModalTitle) videoModalTitle.textContent = title || '';
         videoModal.classList.add('show');
         videoModal.setAttribute('aria-hidden','false');
@@ -287,13 +253,11 @@ async function loadNotes(topicId) {
 
     function showIframeErrorMessage(title, youtubeUrl) {
         if (!videoModal || !videoModalIframe) return;
-        
         videoModalIframe.style.display = 'none';
         if (videoModalPlayer) {
             videoModalPlayer.style.display = 'none';
             videoModalPlayer.src = '';
         }
-        
         const modalContent = videoModal.querySelector('.video-modal-content');
         if (modalContent) {
             let errorDiv = modalContent.querySelector('#iframeErrorMessage');
@@ -308,13 +272,12 @@ async function loadNotes(topicId) {
                     </button>
                 </div>
             `;
-
             if (!errorDiv) {
                 errorDiv = document.createElement('div');
                 errorDiv.id = 'iframeErrorMessage';
                 const frameWrap = modalContent.querySelector('.video-frame-wrap');
                 if (frameWrap) {
-                    frameWrap.innerHTML = errorHtml; // Replace iframe with error message
+                    frameWrap.innerHTML = errorHtml;
                     const btn = frameWrap.querySelector('#openYoutubeBtn');
                     if (btn) {
                         btn.addEventListener('click', () => {
@@ -365,14 +328,12 @@ async function loadNotes(topicId) {
         }
     }
 
-    // Funções do Painel de Vídeos (Video Panel) - V2
     function createVideoPanel(subtopics) {
         if (!videoPanel || !videoPanelContent) return;
         if (!subtopics || subtopics.length === 0) {
             hideVideoPanel();
             return;
         }
-
         const html = subtopics.map(sub => {
             const embed = normalizeEmbedUrl(sub.url) || getYouTubeEmbedUrl(sub.url) || sub.url;
             return `
@@ -382,7 +343,6 @@ async function loadNotes(topicId) {
                 </div>
             `;
         }).join('');
-
         videoPanelContent.innerHTML = html;
         videoPanel.classList.add('show');
         videoPanel.setAttribute('aria-hidden','false');
@@ -394,25 +354,18 @@ async function loadNotes(topicId) {
         videoPanel.classList.remove('show');
         videoPanel.setAttribute('aria-hidden','true');
         videoPanelContent.innerHTML = '';
-        roadmapContainer.style.marginLeft = '0'; 
+        roadmapContainer.style.marginLeft = '0';
     }
-    
-    // --- Funções Principais de DOM e Interação ---
 
     function createRoadmapNode(topic, index, isLast) {
         const nodeDiv = document.createElement('div');
         nodeDiv.className = 'roadmap-node';
-        
         const hasSubtopics = topic.subtopics.length > 0;
         const disableSubtopicsDisplay = topic.id === 'teste-final';
         const lineWidth = isLast ? 0 : (hasSubtopics ? 280 : 200);
-
-        // 🟢 1. Classe de conclusão para o botão e para o nó de sub-tópicos
         const completionClass = topic.status === 'completed' ? ' completed' : '';
-
         nodeDiv.innerHTML = `
             <p class="node-title ${topic.isPlaceholder ? 'placeholder' : ''}">${topic.title}</p>
-            
             <div class="node-wrapper">
                 <button class="node-button${completionClass}" data-topic-id="${topic.id}" aria-label="View ${topic.title}">
                     <div class="node-glow"></div>
@@ -422,7 +375,6 @@ async function loadNotes(topicId) {
                         </div>
                     </div>
                 </button>
-                
                 ${!isLast ? `
                     <div class="node-line desktop-only">
                         <svg width="${lineWidth}" height="2" viewBox="0 0 ${lineWidth} 2" fill="none" preserveAspectRatio="none">
@@ -431,7 +383,6 @@ async function loadNotes(topicId) {
                     </div>
                 ` : ''}
             </div>
-            
             ${(hasSubtopics && !disableSubtopicsDisplay) ? ` 
                 <div class="node-subtopics${completionClass}"> 
                     <div class="subtopics-card">
@@ -447,46 +398,32 @@ async function loadNotes(topicId) {
                 </div>
             ` : ''}
         `;
-        
         return nodeDiv;
     }
-    
-    window.syncRoadmapStatus = async function() {
-        const progressMap = await fetchProgressMap(); // Busca progresso do Firebase ou LocalStorage
 
+    window.syncRoadmapStatus = async function() {
+        const progressMap = await fetchProgressMap();
         if (typeof roadmapData !== 'undefined' && roadmapData.topics) {
             roadmapData.topics.forEach(topic => {
-                updateTopicStatus(topic, progressMap); // Passa o progressMap
+                updateTopicStatus(topic, progressMap);
             });
         }
     }
-    
-    // Render roadmap (Expõe ao escopo global para que toggleTopic possa chamá-lo)
-    window.renderRoadmap = async function(isUpdate = false) { 
-        // 1. Sincronizar dados antes de renderizar
+
+    window.renderRoadmap = async function(isUpdate = false) {
         await window.syncRoadmapStatus();
-        
         const isDesktop = window.innerWidth >= 1024;
         const pathDiv = document.createElement('div');
-        pathDiv.className = isDesktop ? 'roadmap-path' : 'roadmap-path-vertical';
-        
+        pathDiv.className = 'roadmap-path';
         if (typeof roadmapData !== 'undefined' && roadmapData.topics) {
             roadmapData.topics.forEach((topic, index) => {
                 const isLast = index === roadmapData.topics.length - 1;
                 const nodeElement = createRoadmapNode(topic, index, isLast);
                 pathDiv.appendChild(nodeElement);
-                
-                if (!isDesktop && !isLast) {
-                    const verticalLine = document.createElement('div');
-                    verticalLine.className = 'vertical-line';
-                    pathDiv.appendChild(verticalLine);
-                }
             });
         }
-        
-        roadmapContainer.innerHTML = ''; 
+        roadmapContainer.innerHTML = '';
         roadmapContainer.appendChild(pathDiv);
-        
         const nodeButtons = roadmapContainer.querySelectorAll('.node-button');
         nodeButtons.forEach(button => {
             button.addEventListener('click', handleNodeClick);
@@ -495,76 +432,55 @@ async function loadNotes(topicId) {
 
     function handleNodeClick(event) {
         const topicId = event.currentTarget.dataset.topicId;
-        const topic = roadmapData.topics.find(t => t.id === topicId); 
-        
+        const topic = roadmapData.topics.find(t => t.id === topicId);
         if (topic) {
             showTopicDetail(topic);
         }
     }
 
     async function saveTotalProgress() {
-    // ⚠️ GARANTIR: 'currentUser', 'db', e 'roadmapData' estão no escopo.
-    if (!currentUser || !db || !roadmapData?.topics) return; 
-
-    // Reutiliza a função que lê o progresso individual (Firebase ou LocalStorage)
-    const progressMap = await fetchProgressMap(); 
-    
-    // Filtra tópicos válidos (não placeholders, pois não contam para o progresso)
-    const validTopics = roadmapData.topics.filter(t => !t.isPlaceholder);
-    const totalValidTopics = validTopics.length;
-
-    let completedCount = 0;
-    validTopics.forEach(topic => {
-        // Verifica se o ID do tópico válido está marcado como true
-        if (progressMap[topic.id] === true) {
-            completedCount++;
-        }
-    });
-
-    const percentage = totalValidTopics === 0 ? 0 : Math.round((completedCount / totalValidTopics) * 100);
-
-    try {
-        // 🚨 NOTA: A Home lê de 'usuarios', então salvamos aqui.
-        const userRef = doc(db, 'usuarios', currentUser.uid); 
-        await updateDoc(userRef, { 
-            progress: { 
-                medicinaPercentage: percentage, 
+        if (!currentUser || !db || !roadmapData?.topics) return;
+        const progressMap = await fetchProgressMap();
+        const validTopics = roadmapData.topics.filter(t => !t.isPlaceholder);
+        const totalValidTopics = validTopics.length;
+        let completedCount = 0;
+        validTopics.forEach(topic => {
+            if (progressMap[topic.id] === true) {
+                completedCount++;
             }
-        }, { merge: true }); // Merge: true é crucial para não sobrescrever outros campos do usuário.
-        
-        console.log(`Progresso total Medicina (${percentage}%) salvo no perfil do usuário.`);
-    } catch (error) {
-        console.error("Erro ao salvar progresso total no Firestore:", error);
+        });
+        const percentage = totalValidTopics === 0 ? 0 : Math.round((completedCount / totalValidTopics) * 100);
+        try {
+            const userRef = doc(db, 'usuarios', currentUser.uid);
+            await setDoc(userRef, {
+                progress: {
+                    medicinaPercentage: percentage,
+                }
+            }, { merge: true });
+            console.log(`Progresso total Medicina (${percentage}%) salvo no perfil do usuário.`);
+        } catch (error) {
+            console.error("Erro ao salvar progresso total no Firestore:", error);
+        }
+        if (window.updateHomeProgress) {
+            window.updateHomeProgress(currentUser.uid);
+        }
     }
-    
-    if (window.updateHomeProgress) {
-        window.updateHomeProgress(currentUser.uid); // Passa o UID para forçar a leitura correta
-    }
-}
 
     async function showTopicDetail(topic) {
         selectedTopic = topic;
-        
-        // 1. Atualizar o estado do nó
         const allNodes = document.querySelectorAll('.node-button');
         allNodes.forEach(node => node.classList.remove('active'));
         const activeNode = document.querySelector(`[data-topic-id="${topic.id}"]`);
         if (activeNode) { activeNode.classList.add('active'); }
-        
-        // 2. Atualizar o painel de detalhes (Título, Status)
         document.getElementById('detailTitle').textContent = topic.title;
         const statusBadge = document.getElementById('detailStatus');
         const statusMap = { 'completed': 'Concluído', 'in-progress': 'Em Progresso', 'not-started': 'Não Iniciado' };
         statusBadge.textContent = statusMap[topic.status] || 'Não Iniciado';
         statusBadge.className = `status-badge ${topic.status}`;
-
-        // 3. Atualizar Anotações
-        const notes = await loadNotes(topic.id); // 🔑 ALTERADO
-        if (topicNotes) topicNotes.value = notes;
+        const notes = await loadNotes(topic.id);
+        topicNotes.value = notes;
         if (notesArea) notesArea.classList.remove('show');
         if (notesBtn) notesBtn.classList.remove('active');
-        
-        // 4. Update Description
         const descriptionDiv = document.getElementById('detailDescription');
         if (topic.description) {
             descriptionDiv.innerHTML = `<div class="section-header">${icons.bookOpen}<h3>Descrição do Tópico</h3></div><p class="section-description">${topic.description}</p>`;
@@ -572,8 +488,6 @@ async function loadNotes(topicId) {
         } else {
             descriptionDiv.style.display = 'none';
         }
-        
-        // 5. Update Subtopics (incluindo listeners para modal de vídeo)
         const subtopicsDiv = document.getElementById('detailSubtopics');
         if (topic.subtopics && topic.subtopics.length > 0) {
             subtopicsDiv.innerHTML = `
@@ -589,8 +503,6 @@ async function loadNotes(topicId) {
                 </ul>
             `;
             subtopicsDiv.style.display = 'block';
-
-            // Anexar listeners de clique para o modal de vídeo
             setTimeout(() => {
                 const subLinks = subtopicsDiv.querySelectorAll('.subtopic-link');
                 subLinks.forEach(link => {
@@ -598,12 +510,10 @@ async function loadNotes(topicId) {
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         const url = link.getAttribute('href');
-                        
                         if (url === 'medicina-quiz.html' || url.endsWith('.html')) {
                              window.open(url, '_self');
-                             return; 
+                             return;
                         }
-
                         const embed = normalizeEmbedUrl(url) || getYouTubeEmbedUrl(url) || url;
                         openVideoModal(embed, link.textContent.trim(), url);
                     });
@@ -612,13 +522,8 @@ async function loadNotes(topicId) {
         } else {
             subtopicsDiv.style.display = 'none';
         }
-        
-        
-
-        // 7. Update Placeholder/Completion Button
         const placeholderDiv = document.getElementById('detailPlaceholder');
         if (placeholderDiv) placeholderDiv.style.display = topic.isPlaceholder ? 'block' : 'none';
-        
         if (completeBtn) {
             if (topic.status === 'completed') {
                 completeBtn.textContent = 'Desmarcar Conclusão';
@@ -628,81 +533,58 @@ async function loadNotes(topicId) {
                 completeBtn.classList.remove('completed');
             }
         }
-        
-        // 8. Mostrar painel
         topicDetail.classList.add('show');
         overlay.classList.add('show');
     }
 
-    // Hide topic detail (Expõe ao escopo global para que toggleTopic possa chamá-lo)
-    window.hideTopicDetail = function() {
-        saveNotes();
+    window.hideTopicDetail = async function() {
+        // ❌ REMOVIDO: Salvamento automático ao fechar a sidebar
         if (notesArea) notesArea.classList.remove('show');
         if (notesBtn) notesBtn.classList.remove('active');
-
         topicDetail.classList.remove('show');
         overlay.classList.remove('show');
-        
         const allNodes = document.querySelectorAll('.node-button');
         allNodes.forEach(node => node.classList.remove('active'));
-        
         selectedTopic = null;
         closeVideoModal();
     }
 
-    async function handleCompleteClick() { 
-    if (selectedTopic) {
-        const topicIdToToggle = selectedTopic.id;
-        
-        // 1. Alterna o status individual (Firestore/Local)
-        await toggleTopic(topicIdToToggle); 
-
-        // 🚨 PASSO CRÍTICO: CHAMA A RENDERIZAÇÃO COMPLETA DO MAPA.
-        // Isso garante que o ícone no DOM seja recriado com o status correto.
-        await window.renderRoadmap(true); 
-
-        // 2. Calcula e salva a porcentagem total no perfil
-        await saveTotalProgress(); 
-        
-        // 3. Busca o tópico ATUALIZADO do array global (agora garantido de estar certo)
-        const updatedTopic = roadmapData.topics.find(t => t.id === topicIdToToggle);
-            
-        if (updatedTopic) {
-            // 4. Re-renderiza a sidebar com o status ATUALIZADO (e marca o nó como 'active')
-            await showTopicDetail(updatedTopic); 
-            
-            // 🚨 REMOVA updateRoadmapNodeIcon daqui!
-            // Ele não é mais necessário porque renderRoadmap() já recriou o nó com o ícone correto.
+    async function handleCompleteClick() {
+        if (selectedTopic) {
+            const topicIdToToggle = selectedTopic.id;
+            await toggleTopic(topicIdToToggle);
+            await window.renderRoadmap(true);
+            await saveTotalProgress();
+            const updatedTopic = roadmapData.topics.find(t => t.id === topicIdToToggle);
+            if (updatedTopic) {
+                await showTopicDetail(updatedTopic);
+            }
         }
     }
-}
-    
+
     function handleHomeClick() {
         hideTopicDetail();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 3. Inicialização e Event Listeners
-    if (typeof auth !== 'undefined' && auth) { // 🔑 Usa a importação 'auth'
+    if (typeof auth !== 'undefined' && auth) {
         auth.onAuthStateChanged(async (user) => {
-            currentUser = user; // 🔑 Atualiza a variável global
+            currentUser = user; // <-- Definido aqui
             if (user) {
                 console.log("Usuário logado:", user.uid);
             } else {
                 console.log("Nenhum usuário logado.");
             }
-            // Sempre renderiza (recarrega o progresso) quando o estado de auth muda
-            await renderRoadmap(); 
-            // Se a sidebar estava aberta, reabrir para carregar anotações/status corretos
+            
+            await renderRoadmap();
             if (selectedTopic) {
                 const currentTopic = roadmapData.topics.find(t => t.id === selectedTopic.id);
                 if(currentTopic) await showTopicDetail(currentTopic);
             }
         });
     }
-    
+
     if (roadmapContainer) {
-        // Se a autenticação não estiver definida, renderiza o roadmap com progresso do LocalStorage
         if (typeof auth === 'undefined' || !auth) {
             renderRoadmap();
         }
@@ -710,8 +592,7 @@ async function loadNotes(topicId) {
         console.error("Erro: Elemento 'roadmapContainer' não encontrado.");
         return;
     }
-    
-    // Anexação dos Listeners (GERAL)
+
     if (closeDetailBtn) closeDetailBtn.addEventListener('click', hideTopicDetail);
     if (overlay) overlay.addEventListener('click', () => {
         if (videoModal && videoModal.classList.contains('show')) {
@@ -723,15 +604,27 @@ async function loadNotes(topicId) {
     if (homeBtn) homeBtn.addEventListener('click', handleHomeClick);
     if (completeBtn) completeBtn.addEventListener('click', handleCompleteClick);
 
-    // Anexação dos Listeners (ANOTAÇÕES)
     if (notesBtn) notesBtn.addEventListener('click', toggleNotesArea);
-    if (topicNotes) topicNotes.addEventListener('input', saveNotes); 
     
-    // Anexação dos Listeners (VÍDEO)
-    if (closeVideoModalBtn) closeVideoModalBtn.addEventListener('click', closeVideoModal);
-    if (closeVideoPanelBtn) closeVideoPanelBtn.addEventListener('click', hideVideoPanel); 
+    // ❌ REMOVIDO: Salvamento automático no 'input'
+    // if (topicNotes) topicNotes.addEventListener('input', saveNotes); 
+    
+    // 💡 NOVO: Evento para salvar as anotações explicitamente
+    if (saveNotesBtn) saveNotesBtn.addEventListener('click', async () => {
+        await saveNotes();
+        // Feedback simples para o usuário
+        const originalText = saveNotesBtn.textContent;
+        saveNotesBtn.textContent = 'Salvo! ✅';
+        saveNotesBtn.disabled = true;
+        setTimeout(() => {
+            saveNotesBtn.textContent = originalText;
+            saveNotesBtn.disabled = false;
+        }, 1500);
+    });
 
-    // Event listeners de Resize
+    if (closeVideoModalBtn) closeVideoModalBtn.addEventListener('click', closeVideoModal);
+    if (closeVideoPanelBtn) closeVideoPanelBtn.addEventListener('click', hideVideoPanel);
+
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
@@ -740,7 +633,6 @@ async function loadNotes(topicId) {
         }, 250);
     });
 
-    // Event listeners de Teclado (Escape)
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             if (videoModal && videoModal.classList.contains('show')) {
@@ -750,6 +642,5 @@ async function loadNotes(topicId) {
             }
         }
     });
-    
-    // FIM do DOMContentLoaded
+
 });

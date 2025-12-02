@@ -7,7 +7,7 @@
     <title>Roadmap - Módulo Medicina Veterinária</title>
     <script>
         (function() {
-            let savedTheme = localStorage.getItem('themePreference'); 
+            let savedTheme = localStorage.getItem('themePreference');
             let isDarkMode = false;
             
             if (savedTheme === 'dark') {
@@ -30,7 +30,6 @@
 </head>
 
 <body>
-    <!-- Header -->
     <header class="roadmap-header">
         <div class="header-content">
             <input type="checkbox" id="dark-mode-toggle">
@@ -52,10 +51,8 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-content">
         <div class="container">
-            <!-- Introduction -->
             <div class="intro-section">
                 <p class="intro-text">
                     Este roadmap apresenta o caminho de aprendizado para o módulo de Medicina Veterinária.
@@ -74,16 +71,13 @@
                 </div>
             </div>
 
-            <!-- Roadmap Container -->
             <div id="roadmapContainer" class="roadmap-container"></div>
 
-            <!-- Video Panel (aparece ao clicar em um título) -->
             <aside id="videoPanel" class="video-panel" aria-hidden="true">
                 <button id="closeVideoPanel" class="close-panel" aria-label="Fechar painel">×</button>
                 <div id="videoPanelContent" class="video-panel-content"></div>
             </aside>
 
-            <!-- Info Message -->
             <div class="info-message">
                 <p>
                     💡 <strong>Dica:</strong> Siga a sequência sugerida para uma melhor compreensão dos conteúdos.
@@ -93,7 +87,6 @@
         </div>
     </main>
 
-    <!-- Topic Detail Sidebar -->
     <div id="overlay" class="overlay"></div>
     <aside id="topicDetail" class="topic-detail">
         <div class="detail-header">
@@ -127,7 +120,8 @@
 
         <div id="notesArea" class="notes-area">
             <textarea id="topicNotes"
-                placeholder="Escreva suas anotações aqui... (As anotações são salvas automaticamente)"></textarea>
+                placeholder="Escreva suas anotações aqui..."></textarea>
+            <button id="saveNotesBtn" class="btn btn-primary save-notes-btn">Salvar Anotações</button>
         </div>
         <div class="detail-content">
             <div id="detailDescription" class="detail-section"></div>
@@ -142,7 +136,6 @@
         </div>
     </aside>
 
-    <!-- Video Modal (centralizado) -->
     <div id="videoModal" class="video-modal" aria-hidden="true">
         <div class="video-modal-content">
             <button id="closeVideoModal" class="close-video-btn" aria-label="Fechar vídeo">×</button>

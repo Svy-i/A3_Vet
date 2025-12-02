@@ -6,7 +6,9 @@ import { initAuthListener, saveUserData, getCurrentUser } from './auth.js';
 const FIREBASE_THEME_KEY = 'preferencias.darkMode';
 
 /**
- * Aplica o tema 'dark-mode' ao body.
+ * Aplica o tema 'dark-mode' ao elemento raiz e atualiza o toggle.
+ * 🚨 IMPORTANTE: Remove o salvamento do localStorage daqui. Ele será feito APENAS em loadAndApplyTheme
+ * se o tema for carregado do Firebase (ou seja, se o usuário estiver logado).
  * @param {boolean} isDarkMode Se deve aplicar o modo escuro.
  */
 function applyTheme(isDarkMode) {
@@ -16,12 +18,8 @@ function applyTheme(isDarkMode) {
     if (root) {
         if (isDarkMode) {
             root.classList.add('dark-mode');
-            // 🚨 NOVO: Salva a preferência no localStorage para o script anti-flash
-            localStorage.setItem('themePreference', 'dark'); 
         } else {
             root.classList.remove('dark-mode');
-            // 🚨 NOVO: Salva a preferência no localStorage para o script anti-flash
-            localStorage.setItem('themePreference', 'light');
         }
     }
     
@@ -32,29 +30,36 @@ function applyTheme(isDarkMode) {
 
 /**
  * Tenta carregar o tema do usuário logado e aplica. 
- * Também sobrepõe a preferência do localStorage (que foi usada pelo anti-flash)
- * com a preferência salva no Firebase.
+ * Se logado, sobrepõe o localStorage com a preferência do Firebase.
+ * Se deslogado, volta para o Light Mode e limpa o localStorage.
  * @param {object|null} user O objeto do usuário atualizado.
  */
 function loadAndApplyTheme(user) {
     let isDarkMode = false;
     
     if (user && user.preferencias) {
-        // 1. Carrega do Firebase (se logado)
+        // 1. USUÁRIO LOGADO: Carrega do Firebase
         isDarkMode = user.preferencias.darkMode === true; 
+        
+        // 🚨 NOVO: Atualiza o localStorage APENAS com a preferência do usuário logado.
+        localStorage.setItem('themePreference', isDarkMode ? 'dark' : 'light'); 
+
         console.log(`Tema carregado do Firebase: ${isDarkMode ? 'Dark' : 'Light'}`);
+
     } else {
-        // 2. Se deslogado, volta para o localStorage ou preferência do sistema
-        let savedTheme = localStorage.getItem('themePreference');
-        if (savedTheme === 'dark') {
-            isDarkMode = true;
-        } else {
-            // Se o localStorage não estiver definido (primeiro acesso)
-            isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        }
+        // 2. USUÁRIO DESLOGADO: Assume Light Mode como padrão de fallback
+        isDarkMode = false;
+        
+        // 🚨 NOVO: Limpa o localStorage para garantir que o anti-flash use o padrão na próxima carga
+        // Este é um fallback de segurança, pois o logout já limpa, mas garante
+        localStorage.removeItem('themePreference'); 
+
+        console.log("Usuário deslogado. Aplicando Light Mode padrão.");
+
+        // Se quiser usar a preferência do sistema como fallback para deslogados:
+        // isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     
-    // 🚨 Aplica o tema (e atualiza o localStorage)
     applyTheme(isDarkMode);
 }
 
@@ -71,7 +76,6 @@ async function saveThemePreference(isDarkMode) {
     }
 
     try {
-        // Salva o tema no caminho "preferencias.darkMode" no Firestore
         const data = {
             [FIREBASE_THEME_KEY]: isDarkMode 
         };
@@ -97,21 +101,19 @@ document.addEventListener('DOMContentLoaded', () => {
         toggle.addEventListener('change', (event) => {
             const isDarkMode = event.target.checked;
             
-            // Aplica imediatamente para a experiência do usuário
+            // Aplica imediatamente
             applyTheme(isDarkMode); 
             
-            // Salva no Firestore (assincronamente)
+            // Salva no Firestore APENAS se o usuário estiver logado
             const user = getCurrentUser();
             if (user) {
                 saveThemePreference(isDarkMode);
+                // 🚨 O localStorage será atualizado na próxima carga pelo loadAndApplyTheme,
+                // mas podemos atualizá-lo aqui também para consistência imediata:
+                localStorage.setItem('themePreference', isDarkMode ? 'dark' : 'light'); 
+            } else {
+                 console.log("Preferência de tema não salva: Usuário não logado.");
             }
         });
     }
 });
-
-// A função applyTheme precisa ser chamada fora do DOMContentLoaded
-// para ser executada o mais rápido possível (evitar "flash" de tema claro)
-// Embora initAuthListener chame applyTheme, deixamos esta chamada para
-// garantir que o estado inicial (preferência do sistema) seja aplicado antes
-// do Auth, minimizando o flash.
-// applyTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);

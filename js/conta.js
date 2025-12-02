@@ -61,10 +61,33 @@ onAuthStateChanged(auth, async (user) => {
 
 // ------------ Logout -----------------
 document.getElementById("logout-btn").addEventListener("click", async () => {
-    try {
-        await signOut(auth);
-        window.location.href = "login.html";
-    } catch (error) {
-        console.error("Erro ao sair:", error);
+    const confirmLogout = confirm("Tem certeza que deseja sair da sua conta?");
+
+    if (confirmLogout) {
+        try {
+            // 🚨 NOVO: Remove a preferência de tema do localStorage ao sair.
+            localStorage.removeItem('themePreference'); 
+            
+            // =======================================================
+            // 🔑 NOVO: Lógica para limpar anotações locais (TEMPORÁRIAS)
+            // =======================================================
+            // Captura todas as chaves do localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                // Se a chave começar com 'notes-', remove-a.
+                if (key && key.startsWith('notes-')) {
+                    localStorage.removeItem(key);
+                    // Como a remoção altera o índice, precisamos decrementar 'i'
+                    i--; 
+                }
+            }
+            // =======================================================
+
+            await signOut(auth);
+            window.location.href = "index.html"; // Redireciona
+        } catch (error) {
+            console.error("Erro ao sair:", error);
+            alert("Ocorreu um erro ao tentar sair. Tente novamente.");
+        }
     }
 });

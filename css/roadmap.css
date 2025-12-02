@@ -96,19 +96,14 @@
 }
 
 .roadmap-path {
-    /* Alinhamento para roadmap horizontal (do primeiro bloco) */
+    /* Alinhamento para roadmap horizontal */
     display: flex;
     align-items: center; 
     overflow-x: auto;
     padding-bottom: 10rem;
-    height: 400px; 
-}
-
-.roadmap-path-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3rem;
+    height: 400px;
+    /* Adicione estas propriedades para forçar o scroll horizontal no desktop */
+    min-width: fit-content;
 }
 
 .roadmap-node {
@@ -225,13 +220,6 @@
     margin-left: 0;
 }
 
-.vertical-line {
-    width: 2px;
-    height: 48px;
-    background: #FF4581;
-    margin-top: 1.5rem;
-}
-
 /* ------------------ SUBTÓPICOS ------------------ */
 
 .node-subtopics {
@@ -334,7 +322,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px 10px 20px;
+    /* Ajuste o padding inferior para garantir espaço para o próximo elemento */
+    padding: 20px 20px 15px 20px; 
+    border-bottom: 1px solid #e5e7eb; /* Adicione uma linha para separação visual */
+    position: sticky; /* Torna o cabeçalho fixo ao rolar */
+    top: 0;
+    background: white; /* Garante que o fundo seja branco (ou a cor do tema) */
+    z-index: 55; /* Deve estar acima da área de notas/conteúdo */
+}
+
+html.dark-mode .topic-detail .detail-header {
+    border-bottom: 1px solid #333333;
+    background: #1e1e1e;
 }
 
 .detail-header-actions {
@@ -404,11 +403,20 @@
     max-height: 0; 
     overflow: hidden;
     transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    /* O conteúdo de anotações deve ter um padding superior quando visível */
 }
 
 .notes-area.show {
-    max-height: 250px; 
-    padding: 10px 20px 20px 20px;
+    /* Aumentei um pouco o max-height para acomodar o botão de salvar */
+    max-height: 300px; 
+    /* Ajustei o padding para dar espaço ao topo e fundo */
+    padding: 10px 20px 20px 20px; 
+    /* Adicione uma borda inferior para separação do conteúdo principal */
+    border-bottom: 1px solid #e5e7eb;
+}
+
+html.dark-mode .notes-area.show {
+    border-bottom: 1px solid #333333;
 }
 
 .notes-action-item {
@@ -1088,5 +1096,66 @@ html.dark-mode .notes-action-item.active {
     }
     to {
         opacity: 1;
+    }
+}
+
+@media (max-width: 1024px) {
+    .roadmap-path {
+        flex-direction: column;
+        align-items: center;
+        gap: 3rem;
+        /* Limpeza e ajuste para o layout vertical */
+        width: auto; 
+        margin-left: 0;
+        padding-bottom: 2rem;
+        height: auto;
+        align-items: center;
+        overflow-x: hidden; 
+    }
+
+    /* 🚨 ADICIONADO: Linha vertical entre os nós */
+    .roadmap-node {
+        position: relative;
+    }
+
+    .roadmap-node::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -3rem; 
+        width: 2px;
+        height: 3rem;
+        background-color: #FF4581; 
+        z-index: 5;
+    }
+    
+    /* 🚨 ADICIONADO: Remove a linha do último nó */
+    .roadmap-path .roadmap-node:last-child::after {
+        display: none;
+    }
+
+    .node-line {
+        display: none;
+    }
+    
+    .roadmap-path .roadmap-node .node-title {
+        /* Remove o posicionamento absoluto para que o título flua normalmente acima do nó */
+        position: static; 
+        transform: none;
+        left: auto;
+    }
+    
+    .roadmap-path .roadmap-node .node-subtopics {
+        /* Remove o posicionamento absoluto para que os sub-tópicos fluam normalmente abaixo do nó */
+        position: static;
+        transform: none;
+        left: auto;
+        bottom: auto;
+        margin-top: 1rem; 
+    }
+
+    .overlay.show {
+        display: block;
     }
 }
